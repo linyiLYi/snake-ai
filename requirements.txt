@@ -1,0 +1,3 @@
+gym
+stable-baselines3
+pygame
