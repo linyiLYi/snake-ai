@@ -1,13 +1,13 @@
+import os
+import sys
 import time
 import random
-import sys
 
-import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
 class SnakeGame:
-    def __init__(self):
+    def __init__(self, silent_mode=True):
         self.board_size = 21
         self.cell_size = 20
         self.width = self.board_size * self.cell_size
@@ -17,27 +17,33 @@ class SnakeGame:
         self.display_width = self.width + 2 * self.border_size
         self.display_height = self.height + 2 * self.border_size + 40
 
-        pygame.init()
-        self.screen = pygame.display.set_mode((self.display_width, self.display_height))
-        pygame.display.set_caption("Snake Game")
+        if not silent_mode:
+            pygame.init()
+            pygame.display.set_caption("Snake Game")
+            self.screen = pygame.display.set_mode((self.display_width, self.display_height))
+            self.font = pygame.font.Font(None, 36)
+        else:
+            self.screen = None
+            self.font = None
 
+        self.snake = None
+        self.food = None
+        self.direction = None
         self.score = 0
-        self.font = pygame.font.Font(None, 36)
-
         self.reset()
-        self.clock = pygame.time.Clock()
 
     def reset(self):
         # Initialize the snake with three cells (row, column)
         self.snake = [(self.board_size // 2 + 1, self.board_size // 2),
                       (self.board_size // 2, self.board_size // 2),
                       (self.board_size // 2 - 1, self.board_size // 2)]
-        self.direction = "DOWN"
+        self.direction = "DOWN" # Snake is moving down initially in each round
         self.food = self._generate_food()
         self.score = 0
-        return 0 #self._get_state()
+        return 0
 
     def step(self, action):
+
         # Update direction
         self.update_direction(action)
 
@@ -52,13 +58,13 @@ class SnakeGame:
         elif self.direction == "RIGHT":
             col += 1
 
-        self.snake.insert(0, (row, col))
+        food_obtained = False
         # Check if snake ate food
         if (row, col) == self.food:
             
             # Add 10 points to the score when food is eaten
             self.score += 10
-            
+            food_obtained = True
             self.food = self._generate_food()
             
         else:
@@ -73,30 +79,33 @@ class SnakeGame:
             or col >= self.board_size
         )
 
+        if not done:
+            self.snake.insert(0, (row, col))
+
         # Calculate reward
+        # reward = 0
         # if done:
         #     reward = -1
         # elif self.snake[0] == self.food:
         #     reward = 1
-        # else:
-        #     reward = 0
 
-        return 0, 0, done # self._get_state(), reward, done
+        return food_obtained, done # self._get_state(), reward, done
 
+    # 0: UP, 1: LEFT, 2: RIGHT, 3: DOWN
+    # Swich Case is supported in Python 3.10+
     def update_direction(self, action):
-        if action == 0:  # Move up
+        if action == 0:
             if self.direction != "DOWN":
                 self.direction = "UP"
-        elif action == 1:  # Move left
+        elif action == 1:
             if self.direction != "RIGHT":
                 self.direction = "LEFT"
-        elif action == 2:  # Move right
+        elif action == 2:
             if self.direction != "LEFT":
                 self.direction = "RIGHT"
-        elif action == 3:  # Move down
+        elif action == 3:
             if self.direction != "UP":
                 self.direction = "DOWN"
-        # If action is anything else, do nothing.
 
     def _generate_food(self):
         food = (random.randint(0, self.board_size - 1), random.randint(0, self.board_size - 1))
@@ -212,7 +221,14 @@ class SnakeGame:
                             (body_x, body_y, body_width, body_height), border_radius=body_radius)
 
 if __name__ == "__main__":
+
     game = SnakeGame()
+    pygame.init()
+    game.screen = pygame.display.set_mode((game.display_width, game.display_height))
+    pygame.display.set_caption("Snake Game")
+    game.font = pygame.font.Font(None, 36)
+    
+
     game_state = "welcome"
 
     # Two hidden button for start and retry click detection
