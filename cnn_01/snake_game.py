@@ -3,11 +3,16 @@ import sys
 import time
 import random
 
+import numpy as np
+
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
 class SnakeGame:
-    def __init__(self, silent_mode=True):
+    def __init__(self, silent_mode=True, seed=0):
+        # set random seed
+        random.seed(seed)
+        
         self.board_size = 21
         self.cell_size = 20
         self.width = self.board_size * self.cell_size
@@ -59,7 +64,9 @@ class SnakeGame:
             col += 1
 
         food_obtained = False
+
         # Check if snake ate food
+        # If snake ate food, it won't pop the last cell
         if (row, col) == self.food:
             
             # Add 10 points to the score when food is eaten
@@ -72,7 +79,7 @@ class SnakeGame:
 
         # Check if snake collided with itself or the wall
         done = (
-            self.snake[0] in self.snake[1:]
+            (row, col) in self.snake
             or row < 0
             or row >= self.board_size
             or col < 0
@@ -82,14 +89,15 @@ class SnakeGame:
         if not done:
             self.snake.insert(0, (row, col))
 
-        # Calculate reward
-        # reward = 0
-        # if done:
-        #     reward = -1
-        # elif self.snake[0] == self.food:
-        #     reward = 1
+        info ={
+            "snake_length": len(self.snake),
+            "snake_head_pos": np.array(self.snake[0]),
+            "prev_snake_head_pos": np.array(self.snake[1]),
+            "food_pos": np.array(self.food),
+            "food_obtained": food_obtained
+        }
 
-        return food_obtained, done # self._get_state(), reward, done
+        return done, info
 
     # 0: UP, 1: LEFT, 2: RIGHT, 3: DOWN
     # Swich Case is supported in Python 3.10+
@@ -285,7 +293,7 @@ if __name__ == "__main__":
 
         if game_state == "running":
             if time.time() - start_time >= update_interval:
-                _, _, done = game.step(action)
+                done, _ = game.step(action)
                 game.render()
                 start_time = time.time()
 

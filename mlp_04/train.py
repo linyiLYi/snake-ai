@@ -8,7 +8,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 
 from snake_game_custom_wrapper import SnakeEnv
 
-NUM_ENV = 16
+NUM_ENV = 32
 LOG_DIR = "logs"
 os.makedirs(LOG_DIR, exist_ok=True)
 
@@ -27,7 +27,7 @@ def linear_schedule(initial_value, final_value=0.0):
 
 def make_env(seed=0):
     def _init():
-        env = SnakeEnv()
+        env = SnakeEnv(seed=seed)
         env = Monitor(env)
         env.seed(seed)
         return env
@@ -38,29 +38,41 @@ def main():
     # Create the Snake environment
     env = SubprocVecEnv([make_env(seed=i) for i in range(NUM_ENV)])
 
-    lr_schedule = linear_schedule(2.5e-4, 2.5e-6)
-    clip_range_schedule = linear_schedule(0.15, 0.025)
+    # lr_schedule = linear_schedule(2.5e-4, 2.5e-6)
+    # clip_range_schedule = linear_schedule(0.15, 0.025)
 
-    # Instantiate a PPO agent
-    model = PPO(
-        "MlpPolicy", 
-        env, 
-        device="cuda", 
-        verbose=1,
-        n_steps=512,
-        batch_size=512,
-        n_epochs=4,
-        gamma=0.94,
-        learning_rate=lr_schedule,
-        clip_range=clip_range_schedule,
-        tensorboard_log=LOG_DIR
-    )
+    # # Instantiate a PPO agent
+    # model = PPO(
+    #     "MlpPolicy", 
+    #     env, 
+    #     device="cuda",
+    #     verbose=1,
+    #     n_steps=2048,
+    #     batch_size=512,
+    #     n_epochs=4,
+    #     gamma=0.94,
+    #     learning_rate=lr_schedule,
+    #     clip_range=clip_range_schedule,
+    #     tensorboard_log=LOG_DIR
+    # )
+
+    # fine-tune
+    lr_schedule = linear_schedule(5.0e-5, 2.5e-6)
+    clip_range_schedule = linear_schedule(0.075, 0.025)
+    model_path = "trained_models_01/ppo_snake_200000000_steps.zip"
+    
+    # Load model and modify the learning rate and entropy coefficient
+    custom_objects = {
+        "learning_rate": lr_schedule,
+        "clip_range": clip_range_schedule
+    }
+    model = PPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
     # Set the save directory
-    save_dir = "trained_models_fix_food_reward"
+    save_dir = "trained_models_01_fintune_01"
     os.makedirs(save_dir, exist_ok=True)
 
-    checkpoint_interval = 31250 # checkpoint_interval * num_envs = total_steps_per_checkpoint
+    checkpoint_interval = 15625 # checkpoint_interval * num_envs = total_steps_per_checkpoint
     checkpoint_callback = CheckpointCallback(save_freq=checkpoint_interval, save_path=save_dir, name_prefix="ppo_snake")
 
     # Writing the training logs from stdout to a file
@@ -70,7 +82,7 @@ def main():
         sys.stdout = log_file
 
         model.learn(
-            total_timesteps=int(100000000), # total_timesteps = stage_interval * num_envs * num_stages (1120 rounds)
+            total_timesteps=int(200000000), # total_timesteps = stage_interval * num_envs * num_stages (1120 rounds)
             callback=[checkpoint_callback]#, stage_increase_callback]
         )
         env.close()
