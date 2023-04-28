@@ -7,9 +7,9 @@ import numpy as np
 from snake_game import SnakeGame
 
 class SnakeEnv(gym.Env):
-    def __init__(self, silent_mode=True, seed=0):
+    def __init__(self, silent_mode=True, seed=0, board_size=21):
         super().__init__()
-        self.game = SnakeGame(silent_mode=silent_mode, seed=seed)
+        self.game = SnakeGame(silent_mode=silent_mode, seed=seed, board_size=board_size)
         self.action_space = gym.spaces.Discrete(4) # 0: UP, 1: LEFT, 2: RIGHT, 3: DOWN
         
         self.observation_space = gym.spaces.Box(

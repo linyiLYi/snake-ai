@@ -41,29 +41,42 @@ def main():
     while len(seed_set) < NUM_ENV:
         seed_set.add(random.randint(0, 1e9))
 
-    # Create the Snake environment
+    # Create the Snake environment.
     env = SubprocVecEnv([make_env(seed=s) for s in seed_set])
 
-    lr_schedule = linear_schedule(2.5e-4, 2.5e-6)
-    clip_range_schedule = linear_schedule(0.15, 0.025)
+    # lr_schedule = linear_schedule(2.5e-4, 2.5e-6)
+    # clip_range_schedule = linear_schedule(0.15, 0.025)
 
     # Instantiate a PPO agent
-    model = PPO(
-        "CnnPolicy", 
-        env, 
-        device="cuda",
-        verbose=1,
-        n_steps=2048,
-        batch_size=512,
-        n_epochs=4,
-        gamma=0.94,
-        learning_rate=lr_schedule,
-        clip_range=clip_range_schedule,
-        tensorboard_log=LOG_DIR
-    )
+    # model = PPO(
+    #     "CnnPolicy", 
+    #     env, 
+    #     device="cuda",
+    #     verbose=1,
+    #     n_steps=2048,
+    #     batch_size=512,
+    #     n_epochs=4,
+    #     gamma=0.94,
+    #     learning_rate=lr_schedule,
+    #     clip_range=clip_range_schedule,
+    #     tensorboard_log=LOG_DIR
+    # )
+
+    # fine-tune
+    lr_schedule = linear_schedule(5.0e-5, 2.5e-6)
+    # clip_range_schedule = linear_schedule(0.075, 0.025)
+    
+    # custom_objects = {
+    #     "learning_rate": lr_schedule,
+    #     "clip_range": clip_range_schedule
+    # }
+    custom_objects = {"learning_rate": lr_schedule}
+    
+    model_path = "trained_models/ppo_snake_100000000_steps.zip"
+    model = PPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
     # Set the save directory
-    save_dir = "trained_models"
+    save_dir = "trained_models_finetuned"
     os.makedirs(save_dir, exist_ok=True)
 
     checkpoint_interval = 15625 # checkpoint_interval * num_envs = total_steps_per_checkpoint
@@ -77,7 +90,7 @@ def main():
 
         model.learn(
             total_timesteps=int(100000000), # total_timesteps = stage_interval * num_envs * num_stages (1120 rounds)
-            callback=[checkpoint_callback]#, stage_increase_callback]
+            callback=[checkpoint_callback]
         )
         env.close()
 

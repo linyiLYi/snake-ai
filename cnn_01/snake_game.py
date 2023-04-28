@@ -9,11 +9,11 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
 class SnakeGame:
-    def __init__(self, silent_mode=True, seed=0):
+    def __init__(self, silent_mode=True, seed=0, board_size=21):
         # set random seed
         random.seed(seed)
         
-        self.board_size = 21
+        self.board_size = board_size
         self.cell_size = 20
         self.width = self.board_size * self.cell_size
         self.height = self.board_size * self.cell_size
