@@ -1,13 +1,12 @@
 import os
 import sys
-import random
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.callbacks import CheckpointCallback
 
-from snake_game_custom_wrapper import SnakeEnv
+from snake_game_custom_wrapper_mlp import SnakeEnv
 
 NUM_ENV = 32
 LOG_DIR = "logs"
@@ -36,20 +35,15 @@ def make_env(seed=0):
 
 def main():
 
-    # Generate a list of random seeds for each environment.
-    seed_set = set()
-    while len(seed_set) < NUM_ENV:
-        seed_set.add(random.randint(0, 1e9))
-
-    # Create the Snake environment.
-    env = SubprocVecEnv([make_env(seed=s) for s in seed_set])
+    # Create the Snake environment
+    env = SubprocVecEnv([make_env(seed=i) for i in range(NUM_ENV)])
 
     # lr_schedule = linear_schedule(2.5e-4, 2.5e-6)
     # clip_range_schedule = linear_schedule(0.15, 0.025)
 
-    # Instantiate a PPO agent
+    # # Instantiate a PPO agent
     # model = PPO(
-    #     "CnnPolicy", 
+    #     "MlpPolicy", 
     #     env, 
     #     device="cuda",
     #     verbose=1,
@@ -64,19 +58,18 @@ def main():
 
     # fine-tune
     lr_schedule = linear_schedule(5.0e-5, 2.5e-6)
-    # clip_range_schedule = linear_schedule(0.075, 0.025)
+    clip_range_schedule = linear_schedule(0.075, 0.025)
+    model_path = "trained_models_01/ppo_snake_200000000_steps.zip"
     
-    # custom_objects = {
-    #     "learning_rate": lr_schedule,
-    #     "clip_range": clip_range_schedule
-    # }
-    custom_objects = {"learning_rate": lr_schedule}
-    
-    model_path = "trained_models/ppo_snake_100000000_steps.zip"
+    # Load model and modify the learning rate and entropy coefficient
+    custom_objects = {
+        "learning_rate": lr_schedule,
+        "clip_range": clip_range_schedule
+    }
     model = PPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
     # Set the save directory
-    save_dir = "trained_models_finetuned"
+    save_dir = "trained_models_mlp"
     os.makedirs(save_dir, exist_ok=True)
 
     checkpoint_interval = 15625 # checkpoint_interval * num_envs = total_steps_per_checkpoint
@@ -89,8 +82,8 @@ def main():
         sys.stdout = log_file
 
         model.learn(
-            total_timesteps=int(100000000), # total_timesteps = stage_interval * num_envs * num_stages (1120 rounds)
-            callback=[checkpoint_callback]
+            total_timesteps=int(200000000), # total_timesteps = stage_interval * num_envs * num_stages (1120 rounds)
+            callback=[checkpoint_callback]#, stage_increase_callback]
         )
         env.close()
 

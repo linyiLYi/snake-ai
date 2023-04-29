@@ -57,13 +57,14 @@ class SnakeEnv(gym.Env):
             # Max length of snake is board_size*board_size, which is 21*21=441 for current setting.
             reward = - 1.0 / (1.0 + math.exp((info["snake_length"] - self.max_snake_length/2)*self.size_coefficient))
 
+       
         else:
             # Reward/punish the agent based on whether it is heading towards the food or not.
             # Use a shrinking coefficient to make it a small incentive not competing with the win/lose reward.
             if np.linalg.norm(info["snake_head_pos"] - info["food_pos"]) < np.linalg.norm(info["prev_snake_head_pos"] - info["food_pos"]):
-                reward = 0.01 # max_cumulated_reward = reward * board_size * 2  
+                reward = 0.001 # max_cumulated_reward = reward * board_size * 2  
             else:
-                reward = -0.01
+                reward = -0.001
         
         return obs, reward, self.done, info
     

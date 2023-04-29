@@ -1,18 +1,12 @@
 import time
-import random
-
 from stable_baselines3 import PPO
+from snake_game_custom_wrapper_mlp import SnakeEnv
 
-from snake_game_custom_wrapper import SnakeEnv
-
-MODEL_PATH = r"trained_models/ppo_snake_90000000_steps"
+MODEL_PATH = r"trained_models_mlp/ppo_snake_final"
 NUM_EPISODE = 10
-RENDER_DELAY = 0.01
+RENDER_DELAY = 0.02
 
-seed = random.randint(0, 1e9)
-print(f"Using seed = {seed} for testing.")
-
-env = SnakeEnv(silent_mode=False, seed=seed)
+env = SnakeEnv(silent_mode=False, seed=10000)
 
 # Load the trained model
 model = PPO.load(MODEL_PATH)
@@ -25,7 +19,7 @@ for episode in range(NUM_EPISODE):
     done = False
     
     num_step = 0
-    print(f"=================== Episode {episode + 1} ==================")
+    print(f"===================Episode {episode + 1}==================")
     while not done:
         action, _ = model.predict(obs)
         obs, reward, done, info = env.step(action)
@@ -42,5 +36,4 @@ for episode in range(NUM_EPISODE):
     total_reward += episode_reward
 
 env.close()
-print(f"=================== Summary ==================")
 print(f"Average reward: {total_reward / NUM_EPISODE}")
