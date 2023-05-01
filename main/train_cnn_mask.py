@@ -2,10 +2,12 @@ import os
 import sys
 import random
 
-from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.callbacks import CheckpointCallback
+
+from sb3_contrib import MaskablePPO
+from sb3_contrib.common.wrappers import ActionMasker
 
 from snake_game_custom_wrapper_cnn import SnakeEnv
 
@@ -29,6 +31,7 @@ def linear_schedule(initial_value, final_value=0.0):
 def make_env(seed=0):
     def _init():
         env = SnakeEnv(seed=seed)
+        env = ActionMasker(env, SnakeEnv.get_action_mask)
         env = Monitor(env)
         env.seed(seed)
         return env
@@ -48,7 +51,7 @@ def main():
     clip_range_schedule = linear_schedule(0.15, 0.025)
 
     # Instantiate a PPO agent
-    model = PPO(
+    model = MaskablePPO(
         "CnnPolicy", 
         env, 
         device="cuda",
@@ -75,23 +78,23 @@ def main():
     # model = PPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
     # finetune 02 & 03 & 04
-    lr_schedule = linear_schedule(5e-5, 2.5e-6)
-    clip_range_schedule = linear_schedule(0.075, 0.025)
+    # lr_schedule = linear_schedule(5e-5, 2.5e-6)
+    # clip_range_schedule = linear_schedule(0.075, 0.025)
 
     # finetune 04
-    n_steps = 1024
+    # n_steps = 1024
     
-    custom_objects = {
-        "learning_rate": lr_schedule,
-        "clip_range": clip_range_schedule,
-        "n_steps": n_steps # finetune 04
-    }
+    # custom_objects = {
+    #     "learning_rate": lr_schedule,
+    #     "clip_range": clip_range_schedule,
+    #     "n_steps": n_steps # finetune 04
+    # }
     
-    model_path = "trained_models_cnn_finetuned_03/ppo_snake_26000000_steps.zip"
-    model = PPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
+    # model_path = "trained_models_cnn_finetuned_03/ppo_snake_26000000_steps.zip"
+    # model = PPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
     # Set the save directory
-    save_dir = "trained_models_cnn_finetuned_04"
+    save_dir = "trained_models_cnn_mask"
     os.makedirs(save_dir, exist_ok=True)
 
     checkpoint_interval = 15625 # checkpoint_interval * num_envs = total_steps_per_checkpoint

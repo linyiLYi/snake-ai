@@ -3,10 +3,16 @@ import random
 
 from stable_baselines3 import PPO
 
+from sb3_contrib import MaskablePPO
+from sb3_contrib.common.wrappers import ActionMasker
+
 from snake_game_custom_wrapper_cnn import SnakeEnv
 
 MODEL_PATH_S = r"trained_models_cnn_finetuned/ppo_snake_final"
-MODEL_PATH_L = r"trained_models_cnn_finetuned_04/ppo_snake_27500000_steps"
+
+# MODEL_PATH_L = r"trained_models_cnn_finetuned_04/ppo_snake_27500000_steps"
+MODEL_PATH_L = r"trained_models_cnn_mask/ppo_snake_4500000_steps"
+
 NUM_EPISODE = 10
 RENDER_DELAY = 0.01
 
@@ -57,7 +63,7 @@ env = SnakeEnv(silent_mode=False, seed=seed, limit_step=False)
 
 # Load the trained model
 model_s = PPO.load(MODEL_PATH_S)
-model_l = PPO.load(MODEL_PATH_L)
+model_l = MaskablePPO.load(MODEL_PATH_L)
 
 total_reward = 0
 retry_limit = 10
@@ -77,9 +83,11 @@ for episode in range(NUM_EPISODE):
         if snake_length < 43:
             action, _ = model_s.predict(obs)
         else:
-            action, _ = model_l.predict(obs)
+            action, _ = model_l.predict(obs, action_masks=env.get_action_mask())
 
-        # print(["UP", "LEFT", "RIGHT", "DOWN"][action])
+        if snake_length >= 43:
+            print(["UP", "LEFT", "RIGHT", "DOWN"][action])
+
         # Give the AI agent 10 retries if it collides with itself or the wall.
         i_retry = 0
         game_over = check_game_over(env, action)
@@ -104,6 +112,9 @@ for episode in range(NUM_EPISODE):
         env.render()
         num_step += 1
         time.sleep(RENDER_DELAY)
+
+        if snake_length >= 43:
+            time.sleep(1)
     
     print(f"Episode {episode + 1}: Reward = {episode_reward}, Score = {env.game.score}, Total steps = {num_step}")
     total_reward += episode_reward

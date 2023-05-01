@@ -8,8 +8,6 @@ import numpy as np
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
-NUM_FOOD = 1
-
 class SnakeGame:
     def __init__(self, silent_mode=True, seed=0, board_size=21):
         # set random seed
@@ -51,7 +49,7 @@ class SnakeGame:
         # self.food = self._generate_food()
 
         # More food during finetuning enables snake to learn addressing scenarios with longer size.
-        self.food_list = set([self._generate_food() for _ in range(NUM_FOOD)]) # Original Training and finetune 01: 1; Finetuning 02,03,04: 40
+        self.food_list = set([self._generate_food() for _ in range(1)]) # Original Training and finetune 01: 1; Finetuning 02,03,04: 40
 
         self.score = 0
         return 0

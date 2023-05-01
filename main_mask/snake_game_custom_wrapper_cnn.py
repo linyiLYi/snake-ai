@@ -64,7 +64,7 @@ class SnakeEnv(gym.Env):
             # reward = reward * 30
 
             # Further increase failure penalty in finetuning #04
-            # reward = reward * 60
+            reward = reward * 60
 
         # else:
         #     # Reward/punish the agent based on whether it is heading towards the food or not.
@@ -81,52 +81,6 @@ class SnakeEnv(gym.Env):
     
     def render(self):
         self.game.render()
-
-    def get_action_mask(self):
-        return np.array([[self._check_action_validity(a) for a in range(self.action_space.n)]])
-    
-    # Check if the action is against the current direction of the snake or is ending the game.
-    def _check_action_validity(self, action):
-        current_direction = self.game.direction
-        snake_list = self.game.snake
-        row, col = snake_list[0]
-        if action == 0: # UP
-            if current_direction == "DOWN":
-                return False
-            else:
-                row -= 1
-
-        elif action == 1: # LEFT
-            if current_direction == "RIGHT":
-                return False
-            else:
-                col -= 1
-
-        elif action == 2: # RIGHT 
-            if current_direction == "LEFT":
-                return False
-            else:
-                col += 1     
-        
-        elif action == 3: # DOWN 
-            if current_direction == "UP":
-                return False
-            else:
-                row += 1
-
-        # Check if snake collided with itself or the wall
-        game_over = (
-            (row, col) in snake_list
-            or row < 0
-            or row >= self.game.board_size
-            or col < 0
-            or col >= self.game.board_size
-        )
-
-        if game_over:
-            return False
-        else:
-            return True
 
     # EMPTY: BLACK; SnakeBODY: GRAY; SnakeHEAD: GREEN; FOOD: RED;
     def _generate_observation(self):
