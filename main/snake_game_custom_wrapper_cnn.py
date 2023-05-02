@@ -66,6 +66,12 @@ class SnakeEnv(gym.Env):
             # Further increase failure penalty in finetuning #04
             # reward = reward * 60
 
+            # Further increase failure penalty in cnn_mask_finetuned #01
+            # reward = reward * 120
+
+            # Further increase failure penalty in cnn_mask_finetuned #01
+            reward = reward * 220
+
         # else:
         #     # Reward/punish the agent based on whether it is heading towards the food or not.
         #     # Use a shrinking coefficient to make it a small incentive not competing with the win/lose reward.

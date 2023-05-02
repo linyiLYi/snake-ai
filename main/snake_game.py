@@ -8,7 +8,7 @@ import numpy as np
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
-NUM_FOOD = 1
+NUM_FOOD = 1 # Original Training and finetune 01: 1; Finetuning 02,03,04 and train_mask, mask_finetune 01, 02: 40
 
 class SnakeGame:
     def __init__(self, silent_mode=True, seed=0, board_size=21):
@@ -51,7 +51,7 @@ class SnakeGame:
         # self.food = self._generate_food()
 
         # More food during finetuning enables snake to learn addressing scenarios with longer size.
-        self.food_list = set([self._generate_food() for _ in range(NUM_FOOD)]) # Original Training and finetune 01: 1; Finetuning 02,03,04: 40
+        self.food_list = set([self._generate_food() for _ in range(NUM_FOOD)])
 
         self.score = 0
         return 0
@@ -227,7 +227,7 @@ class SnakeGame:
         head_r, head_c = self.snake[0]
         head_x = head_c * self.cell_size + self.border_size
         head_y = head_r * self.cell_size + self.border_size
-        pygame.draw.polygon(self.screen, (0, 0, 255), [
+        pygame.draw.polygon(self.screen, (100, 100, 255), [
             (head_x + self.cell_size // 2, head_y),
             (head_x + self.cell_size, head_y + self.cell_size // 2),
             (head_x + self.cell_size // 2, head_y + self.cell_size),

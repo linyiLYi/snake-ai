@@ -4,17 +4,14 @@ import random
 from stable_baselines3 import PPO
 
 from sb3_contrib import MaskablePPO
-from sb3_contrib.common.wrappers import ActionMasker
 
 from snake_game_custom_wrapper_cnn import SnakeEnv
 
 MODEL_PATH_S = r"trained_models_cnn_finetuned/ppo_snake_final"
-
-# MODEL_PATH_L = r"trained_models_cnn_finetuned_04/ppo_snake_27500000_steps"
-MODEL_PATH_L = r"trained_models_cnn_mask/ppo_snake_4500000_steps"
+MODEL_PATH_L = r"trained_models_cnn_mask_finetuned_01/ppo_snake_80000000_steps"
 
 NUM_EPISODE = 10
-RENDER_DELAY = 0.01
+RENDER_DELAY = 0.01 # 0.01 fast, 0.05 slow
 
 # Check if the action ends the game
 def check_game_over(env, action):
@@ -85,19 +82,21 @@ for episode in range(NUM_EPISODE):
         else:
             action, _ = model_l.predict(obs, action_masks=env.get_action_mask())
 
-        if snake_length >= 43:
-            print(["UP", "LEFT", "RIGHT", "DOWN"][action])
+        # if snake_length >= 43:
+        #     print(["UP", "LEFT", "RIGHT", "DOWN"][action])
 
         # Give the AI agent 10 retries if it collides with itself or the wall.
         i_retry = 0
         game_over = check_game_over(env, action)
         while game_over and i_retry < retry_limit:
-            print(f"Retry {i_retry + 1}...")
             if snake_length < 43:
                 action, _ = model_s.predict(obs)
             else:
                 action, _ = model_l.predict(obs)
             game_over = check_game_over(env, action)
+
+            retry_direction = ["UP", "LEFT", "RIGHT", "DOWN"][action]
+            print(f"Retry {i_retry + 1}: action = {retry_direction}")
             i_retry += 1
 
         obs, reward, done, info = env.step(action)
@@ -107,17 +106,18 @@ for episode in range(NUM_EPISODE):
             final_direction = ["UP", "LEFT", "RIGHT", "DOWN"][action]
             print(f"Game over, penalty: {reward}")
             print(f"Final direction: {final_direction}")
-            time.sleep(5)
+            
         episode_reward += reward
         env.render()
         num_step += 1
         time.sleep(RENDER_DELAY)
 
-        if snake_length >= 43:
-            time.sleep(1)
+        # if snake_length >= 43:
+        #     time.sleep(1)
     
     print(f"Episode {episode + 1}: Reward = {episode_reward}, Score = {env.game.score}, Total steps = {num_step}")
     total_reward += episode_reward
+    time.sleep(5)
 
 env.close()
 print(f"=================== Summary ==================")
