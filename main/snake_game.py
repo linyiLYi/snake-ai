@@ -8,7 +8,7 @@ import numpy as np
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
-NUM_FOOD = 1 # Original Training and finetune 01: 1; Finetuning 02,03,04 and train_mask, mask_finetune 01, 02: 40
+NUM_FOOD = 1 # Original Training and finetune 01: 1; Finetuning 02, 03, 04 and train_mask, mask_finetune 01, 02: 40
 
 class SnakeGame:
     def __init__(self, silent_mode=True, seed=0, board_size=21):

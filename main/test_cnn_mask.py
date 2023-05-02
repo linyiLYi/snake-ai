@@ -9,9 +9,10 @@ from snake_game_custom_wrapper_cnn import SnakeEnv
 
 MODEL_PATH_S = r"trained_models_cnn_finetuned/ppo_snake_final"
 MODEL_PATH_L = r"trained_models_cnn_mask_finetuned_01/ppo_snake_80000000_steps"
+MODEL_PATH_X = r"trained_models_cnn_mask_finetuned_03/ppo_snake_10000000_steps"
 
 NUM_EPISODE = 10
-RENDER_DELAY = 0.01 # 0.01 fast, 0.05 slow
+RENDER_DELAY = 0.005 # 0.01 fast, 0.05 slow
 
 # Check if the action ends the game
 def check_game_over(env, action):
@@ -61,8 +62,10 @@ env = SnakeEnv(silent_mode=False, seed=seed, limit_step=False)
 # Load the trained model
 model_s = PPO.load(MODEL_PATH_S)
 model_l = MaskablePPO.load(MODEL_PATH_L)
+model_x = MaskablePPO.load(MODEL_PATH_X)
 
 total_reward = 0
+total_score = 0
 retry_limit = 10
 
 for episode in range(NUM_EPISODE):
@@ -79,8 +82,10 @@ for episode in range(NUM_EPISODE):
             snake_length = info["snake_length"]
         if snake_length < 43:
             action, _ = model_s.predict(obs)
-        else:
+        elif snake_length < 143: # 163
             action, _ = model_l.predict(obs, action_masks=env.get_action_mask())
+        else:
+            action, _ = model_x.predict(obs, action_masks=env.get_action_mask())
 
         # if snake_length >= 43:
         #     print(["UP", "LEFT", "RIGHT", "DOWN"][action])
@@ -91,8 +96,10 @@ for episode in range(NUM_EPISODE):
         while game_over and i_retry < retry_limit:
             if snake_length < 43:
                 action, _ = model_s.predict(obs)
-            else:
+            elif snake_length < 143:
                 action, _ = model_l.predict(obs)
+            else:
+                action, _ = model_x.predict(obs)
             game_over = check_game_over(env, action)
 
             retry_direction = ["UP", "LEFT", "RIGHT", "DOWN"][action]
@@ -117,8 +124,9 @@ for episode in range(NUM_EPISODE):
     
     print(f"Episode {episode + 1}: Reward = {episode_reward}, Score = {env.game.score}, Total steps = {num_step}")
     total_reward += episode_reward
+    total_score += env.game.score
     time.sleep(5)
 
 env.close()
 print(f"=================== Summary ==================")
-print(f"Average reward: {total_reward / NUM_EPISODE}")
+print(f"Average Score: {total_score / NUM_EPISODE}, Average reward: {total_reward / NUM_EPISODE}")

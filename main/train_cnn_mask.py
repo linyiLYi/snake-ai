@@ -94,11 +94,12 @@ def main():
     # model_path = "trained_models_cnn_finetuned_03/ppo_snake_26000000_steps.zip"
     # model = PPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
-    model_path = "trained_models_cnn_mask_finetuned_01/ppo_snake_80000000_steps.zip"
+    # mask_finetune 01, 02, 03
+    model_path = "trained_models_cnn_mask_finetuned_02/ppo_snake_55000000_steps.zip"
     model = MaskablePPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
     # Set the save directory
-    save_dir = "trained_models_cnn_mask_finetuned_02"
+    save_dir = "trained_models_cnn_mask_finetuned_03"
     os.makedirs(save_dir, exist_ok=True)
 
     checkpoint_interval = 15625 # checkpoint_interval * num_envs = total_steps_per_checkpoint

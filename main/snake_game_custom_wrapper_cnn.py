@@ -70,7 +70,10 @@ class SnakeEnv(gym.Env):
             # reward = reward * 120
 
             # Further increase failure penalty in cnn_mask_finetuned #01
-            reward = reward * 220
+            # reward = reward * 220
+
+            # Further increase failure penalty in cnn_mask_finetuned #02
+            reward = reward * 320
 
         # else:
         #     # Reward/punish the agent based on whether it is heading towards the food or not.
