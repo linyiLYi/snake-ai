@@ -5,11 +5,12 @@ from stable_baselines3 import PPO
 
 from sb3_contrib import MaskablePPO
 
-from snake_game_custom_wrapper_cnn import SnakeEnv
+# from snake_game_custom_wrapper_cnn import SnakeEnv
+from snake_game_custom_wrapper_cnn_x import SnakeEnv
 
 MODEL_PATH_S = r"trained_models_cnn_finetuned/ppo_snake_final"
-MODEL_PATH_L = r"trained_models_cnn_mask_finetuned_01/ppo_snake_80000000_steps"
-MODEL_PATH_X = r"trained_models_cnn_mask_finetuned_03/ppo_snake_10000000_steps"
+MODEL_PATH_L = r"trained_models_cnn_mask_finetuned_02/ppo_snake_37000000_steps"
+MODEL_PATH_X= r"trained_models_cnn_mask_accelerated_04/ppo_snake_8000000_steps"
 
 NUM_EPISODE = 10
 RENDER_DELAY = 0.005 # 0.01 fast, 0.05 slow
@@ -66,6 +67,8 @@ model_x = MaskablePPO.load(MODEL_PATH_X)
 
 total_reward = 0
 total_score = 0
+min_score = 1e9
+max_score = 0
 retry_limit = 10
 
 for episode in range(NUM_EPISODE):
@@ -80,12 +83,15 @@ for episode in range(NUM_EPISODE):
     while not done:
         if info:
             snake_length = info["snake_length"]
-        if snake_length < 43:
-            action, _ = model_s.predict(obs)
-        elif snake_length < 143: # 163
-            action, _ = model_l.predict(obs, action_masks=env.get_action_mask())
-        else:
-            action, _ = model_x.predict(obs, action_masks=env.get_action_mask())
+        # if snake_length < 43:
+        #     action, _ = model_s.predict(obs)
+        # elif snake_length < 143: # 163
+        #     action, _ = model_l.predict(obs, action_masks=env.get_action_mask())
+        # else:
+        #     action, _ = model_x.predict(obs, action_masks=env.get_action_mask())
+
+        # action = 3 # Always go down
+        action, _ = model_x.predict(obs, action_masks=env.get_action_mask())
 
         # if snake_length >= 43:
         #     print(["UP", "LEFT", "RIGHT", "DOWN"][action])
@@ -102,12 +108,12 @@ for episode in range(NUM_EPISODE):
                 action, _ = model_x.predict(obs)
             game_over = check_game_over(env, action)
 
-            retry_direction = ["UP", "LEFT", "RIGHT", "DOWN"][action]
-            print(f"Retry {i_retry + 1}: action = {retry_direction}")
+            # retry_direction = ["UP", "LEFT", "RIGHT", "DOWN"][action]
+            # print(f"Retry {i_retry + 1}: action = {retry_direction}")
             i_retry += 1
 
         obs, reward, done, info = env.step(action)
-        if info["food_obtained"]:
+        if info["food_obtained"] and reward > 0:
             print(f"Food obtained at step {num_step}, reward: {reward}")
         if done:
             final_direction = ["UP", "LEFT", "RIGHT", "DOWN"][action]
@@ -119,14 +125,17 @@ for episode in range(NUM_EPISODE):
         num_step += 1
         time.sleep(RENDER_DELAY)
 
-        # if snake_length >= 43:
-        #     time.sleep(1)
+    episode_score = env.game.score
+    if episode_score < min_score:
+        min_score = episode_score
+    if episode_score > max_score:
+        max_score = episode_score
     
-    print(f"Episode {episode + 1}: Reward = {episode_reward}, Score = {env.game.score}, Total steps = {num_step}")
+    print(f"Episode {episode + 1}: Reward = {episode_reward}, Score = {episode_score}, Total steps = {num_step}, Snake length = {len(env.game.snake)}")
     total_reward += episode_reward
     total_score += env.game.score
-    time.sleep(5)
+    time.sleep(3)
 
 env.close()
 print(f"=================== Summary ==================")
-print(f"Average Score: {total_score / NUM_EPISODE}, Average reward: {total_reward / NUM_EPISODE}")
+print(f"Average Score: {total_score / NUM_EPISODE}, Min Score: {min_score}, Max Score: {max_score}, Average reward: {total_reward / NUM_EPISODE}")

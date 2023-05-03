@@ -40,11 +40,14 @@ class SnakeGame:
         self.score = 0
         self.reset()
 
-    def reset(self):
+    def reset(self, warm_start=False):
         # Initialize the snake with three cells (row, column)
-        self.snake = [(self.board_size // 2 + 1, self.board_size // 2),
-                      (self.board_size // 2, self.board_size // 2),
-                      (self.board_size // 2 - 1, self.board_size // 2)]
+        if warm_start:
+            self.snake = self._generate_connected_path(140)
+        else:
+            self.snake = [(self.board_size // 2 + 1, self.board_size // 2),
+                          (self.board_size // 2, self.board_size // 2),
+                          (self.board_size // 2 - 1, self.board_size // 2)]
         self.direction = "DOWN" # Snake is moving down initially in each round
         
         # Original Training
@@ -74,6 +77,7 @@ class SnakeGame:
 
         food_obtained = False
         food = None
+
         # Check if snake ate food
         # If snake ate food, it won't pop the last cell
         for food in self.food_list:
@@ -89,6 +93,16 @@ class SnakeGame:
             self.food_list.remove(food)
             
         else:
+            
+            # During training, snake will have some chance of not popping the last cell even if food is not obtained.
+            # if TRAINING:
+            #     if len(self.snake) <= 140:
+            #         if random.random() < 0.5:
+            #             self.snake.pop()
+            #     else:
+            #         self.snake.pop()
+            # else:
+            #     self.snake.pop()
             self.snake.pop()
 
         # Check if snake collided with itself or the wall
@@ -138,12 +152,49 @@ class SnakeGame:
             food = (random.randint(0, self.board_size - 1), random.randint(0, self.board_size - 1))
         return food
 
-    # def _get_state(self):
-    #     state = np.zeros((self.board_size, self.board_size), dtype=np.uint8)
-    #     for r, c in self.snake:
-    #         state[r, c] = 1
-    #     state[self.food] = 2
-    #     return state.flatten()
+    def _generate_connected_path(self, length):
+        directions = ["UP", "DOWN", "LEFT", "RIGHT"]
+
+        # Keep clear of the region under the snake's initial position
+        clear_region = set()
+        for i in range(self.board_size // 2 + 1, self.board_size):
+            clear_region.update([(i, self.board_size // 2 - 1),
+                                 (i, self.board_size // 2),
+                                 (i, self.board_size // 2 + 1)])
+            
+        result_path_length = 0
+        while result_path_length < length:
+            path = []
+            
+            current_position = (self.board_size // 2, self.board_size // 2)
+            path.append(current_position)
+            for _ in range(1, length):
+                available_directions = list(directions)
+
+                while available_directions:
+                    direction = random.choice(available_directions)
+
+                    if direction == "UP":
+                        next_position = (current_position[0] - 1, current_position[1])
+                    elif direction == "DOWN":
+                        next_position = (current_position[0] + 1, current_position[1])
+                    elif direction == "LEFT":
+                        next_position = (current_position[0], current_position[1] - 1)
+                    elif direction == "RIGHT":
+                        next_position = (current_position[0], current_position[1] + 1)
+
+                    if next_position not in path and (next_position not in clear_region) and 0 <= next_position[0] < self.board_size and 0 <= next_position[1] < self.board_size:
+                        path.append(next_position)
+                        current_position = next_position
+                        break
+                    else:
+                        available_directions.remove(direction)
+                
+                if len(available_directions) == 0:
+                    break
+            result_path_length = len(path)
+            # print(result_path_length)
+        return path
     
     def draw_score(self):
         score_text = self.font.render(f"Score: {self.score}", True, (255, 255, 255))

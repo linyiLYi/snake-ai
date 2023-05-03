@@ -9,7 +9,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 from sb3_contrib import MaskablePPO
 from sb3_contrib.common.wrappers import ActionMasker
 
-from snake_game_custom_wrapper_cnn import SnakeEnv
+from snake_game_custom_wrapper_cnn_x import SnakeEnv
 
 NUM_ENV = 32
 LOG_DIR = "logs"
@@ -80,14 +80,11 @@ def main():
     # finetune 02 & 03 & 04
     lr_schedule = linear_schedule(5e-5, 2.5e-6)
     clip_range_schedule = linear_schedule(0.075, 0.025)
-
-    # finetune 04
-    # n_steps = 1024
     
     custom_objects = {
         "learning_rate": lr_schedule,
         "clip_range": clip_range_schedule,
-        # "n_steps": n_steps # finetune 04
+        # "n_steps": n_steps # cnn_finetuned_04
     }
     
     # finetune 01 & 02 & 03 & 04
@@ -95,11 +92,11 @@ def main():
     # model = PPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
     # mask_finetune 01, 02, 03
-    model_path = "trained_models_cnn_mask_finetuned_03/ppo_snake_26000000_steps.zip"
+    model_path = "trained_models_cnn_mask_finetuned_02/ppo_snake_37000000_steps"
     model = MaskablePPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
     # Set the save directory
-    save_dir = "trained_models_cnn_mask_accelerated_04"
+    save_dir = "trained_models_cnn_mask_x_02"
     os.makedirs(save_dir, exist_ok=True)
 
     checkpoint_interval = 15625 # checkpoint_interval * num_envs = total_steps_per_checkpoint

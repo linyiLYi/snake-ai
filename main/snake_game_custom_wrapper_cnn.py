@@ -42,49 +42,64 @@ class SnakeEnv(gym.Env):
         self.done, info = self.game.step(action) # info: "snake_length": int, "reward_steps": int, "snake_head_pos": np_array, "prev_snake_head_pos": np_array, "food_pos": np_array, "food_obtained": boolean
         obs = self._generate_observation()
 
-        self.reward_step_counter += 1
+        # self.reward_step_counter += 1
 
-        if self.reward_step_counter > self.step_limit:
-            self.done = True # Set game to lose if agent go beyond step limit
-            self.reward_step_counter = 0 
+        # if self.reward_step_counter > self.step_limit:
+        #     self.done = True # Set game to lose if agent go beyond step limit
+        #     self.reward_step_counter = 0 
 
         reward = 0
-        if info["food_obtained"]: # food eaten
-            # Boost the reward based on snake length, the longer the snake, the bigger the reward.
-            # Sigmoid reward with 1.0 as constant boost.
-            reward = 1.0 + 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient))
-            self.reward_step_counter = 0 # Reset reward step counter
-        
-        elif self.done: # Bump into wall or exceed step limit, game over.
-            # Shrink the penalty using snake length, the longer the snake, the smaller the penalty.
-            # Max length of snake is board_size*board_size, which is 21*21=441 for current setting.
-            reward = - 1.0 / (1.0 + math.exp((info["snake_length"] - self.max_snake_length/2)*self.size_coefficient))
+        if len(self.game.snake) > 143: # only focus on long snake strategy
+
+            if info["food_obtained"]: # food eaten
+                # Boost the reward based on snake length, the longer the snake, the bigger the reward.
+                # Sigmoid reward with 1.0 as constant boost.
+                # reward = 1.0 + 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient))
+                # reward = 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient)) * 0.004
+                reward = 1.0 + 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient))
+                # self.reward_step_counter = 0 # Reset reward step counter
             
-            # Increase failure penalty in finetuning #03
+            elif self.done: # Bump into wall or exceed step limit, game over.
+                # Shrink the penalty using snake length, the longer the snake, the smaller the penalty.
+                # Max length of snake is board_size*board_size, which is 21*21=441 for current setting.
+                reward = - 1.0 / (1.0 + math.exp((info["snake_length"] - self.max_snake_length/2)*self.size_coefficient))
+                # reward = 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient)) - 0.5
+
+            # Increase failure penalty in cnn_finetuned #03
             # reward = reward * 30
 
-            # Further increase failure penalty in finetuning #04
+            # Further increase failure penalty in cnn_finetuned #04
             # reward = reward * 60
 
             # Further increase failure penalty in cnn_mask_finetuned #01
             # reward = reward * 120
 
-            # Further increase failure penalty in cnn_mask_finetuned #01
+            # Further increase failure penalty in cnn_mask_finetuned #02
             # reward = reward * 220
 
-            # Further increase failure penalty in cnn_mask_finetuned #02
-            reward = reward * 320
+            # Further increase failure penalty in cnn_mask_finetuned #03
+            # reward = reward * 320
 
-        # else:
-        #     # Reward/punish the agent based on whether it is heading towards the food or not.
-        #     # Use a shrinking coefficient to make it a small incentive not competing with the win/lose reward.
-        #     if np.linalg.norm(info["snake_head_pos"] - info["food_pos"]) < np.linalg.norm(info["prev_snake_head_pos"] - info["food_pos"]):
-        #         reward = 0.01 # max_cumulated_reward = reward * board_size * 2  
-        #     else:
-        #         reward = -0.01
+            # Get rid of failure penalty boost in cnn_mask_finetuned #04 (40 food down to 1 food)
+            # reward = reward
 
-        # Reward normalization in finetuning #03, 04
-        reward = reward * 0.1
+            # Model cnn_mask_accelerated penalty boost.
+            # reward = reward * 30
+        
+            # else:
+            #     # Survive reward in cnn_mask_accelerated
+            #     reward = 0.01
+
+            # else:
+            #     # Reward/punish the agent based on whether it is heading towards the food or not.
+            #     # Use a shrinking coefficient to make it a small incentive not competing with the win/lose reward.
+            #     if np.linalg.norm(info["snake_head_pos"] - info["food_pos"]) < np.linalg.norm(info["prev_snake_head_pos"] - info["food_pos"]):
+            #         reward = 0.01 # max_cumulated_reward = reward * board_size * 2  
+            #     else:
+            #         reward = -0.01
+
+            # Reward normalization in finetuning #03, 04
+            # reward = reward * 0.1
 
         return obs, reward, self.done, info
     
