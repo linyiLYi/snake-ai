@@ -157,7 +157,9 @@ cython_debug/
 # Logs
 /main/logs*
 
-archives/
+# archive models
+/archives/
+/main_single
 
 *trained_models*
 *logs*
