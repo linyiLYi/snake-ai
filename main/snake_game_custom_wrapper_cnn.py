@@ -49,21 +49,32 @@ class SnakeEnv(gym.Env):
         #     self.reward_step_counter = 0 
 
         reward = 0
-        if len(self.game.snake) > 143: # only focus on long snake strategy
-
-            if info["food_obtained"]: # food eaten
-                # Boost the reward based on snake length, the longer the snake, the bigger the reward.
-                # Sigmoid reward with 1.0 as constant boost.
-                # reward = 1.0 + 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient))
-                # reward = 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient)) * 0.004
-                reward = 1.0 + 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient))
-                # self.reward_step_counter = 0 # Reset reward step counter
+        if info["food_obtained"]: # food eaten
+            # Boost the reward based on snake length, the longer the snake, the bigger the reward.
+            # Sigmoid reward with 1.0 as constant boost.
+            reward = 1.0 + 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient))
+            # reward = 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient)) * 0.004
+            # self.reward_step_counter = 0 # Reset reward step counter
+        
+        elif self.done: # Bump into wall or exceed step limit, game over.
+            # Shrink the penalty using snake length, the longer the snake, the smaller the penalty.
+            # Max length of snake is board_size*board_size, which is 21*21=441 for current setting.
+            reward = - 1.0 / (1.0 + math.exp((info["snake_length"] - self.max_snake_length/2)*self.size_coefficient))
             
-            elif self.done: # Bump into wall or exceed step limit, game over.
-                # Shrink the penalty using snake length, the longer the snake, the smaller the penalty.
-                # Max length of snake is board_size*board_size, which is 21*21=441 for current setting.
-                reward = - 1.0 / (1.0 + math.exp((info["snake_length"] - self.max_snake_length/2)*self.size_coefficient))
-                # reward = 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient)) - 0.5
+        # if len(self.game.snake) > 143: # only focus on long snake strategy
+
+        #     if info["food_obtained"]: # food eaten
+        #         # Boost the reward based on snake length, the longer the snake, the bigger the reward.
+        #         # Sigmoid reward with 1.0 as constant boost.
+        #         reward = 1.0 + 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient))
+        #         # reward = 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient)) * 0.004
+        #         # self.reward_step_counter = 0 # Reset reward step counter
+            
+        #     elif self.done: # Bump into wall or exceed step limit, game over.
+        #         # Shrink the penalty using snake length, the longer the snake, the smaller the penalty.
+        #         # Max length of snake is board_size*board_size, which is 21*21=441 for current setting.
+        #         reward = - 1.0 / (1.0 + math.exp((info["snake_length"] - self.max_snake_length/2)*self.size_coefficient))
+        #         # reward = 1.0 / (1.0 + math.exp((self.max_snake_length/2 - info["snake_length"])*self.size_coefficient)) - 0.5
 
             # Increase failure penalty in cnn_finetuned #03
             # reward = reward * 30

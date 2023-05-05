@@ -159,7 +159,6 @@ cython_debug/
 
 # archive models
 /archives/
-/main_single
 
 *trained_models*
 *logs*

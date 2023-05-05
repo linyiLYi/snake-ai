@@ -11,12 +11,12 @@ import pygame
 NUM_FOOD = 1 # Original Training and finetune 01: 1; Finetuning 02, 03, 04 and train_mask, mask_finetune 01, 02: 40
 
 class SnakeGame:
-    def __init__(self, silent_mode=True, seed=0, board_size=21):
+    def __init__(self, seed=0, board_size=21, silent_mode=True):
         # set random seed
         random.seed(seed)
         
         self.board_size = board_size
-        self.cell_size = 20
+        self.cell_size = 30
         self.width = self.board_size * self.cell_size
         self.height = self.board_size * self.cell_size
 
