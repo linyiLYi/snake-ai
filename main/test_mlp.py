@@ -7,9 +7,9 @@ from snake_game_custom_wrapper_mlp import SnakeEnv
 
 MODEL_PATH = r"trained_models/mlp_final"
 
-RENDER = False
-NUM_EPISODE = 3
-FRAME_DELAY = 0.01 # 0.01 fast, 0.05 slow
+RENDER = True
+NUM_EPISODE = 10
+FRAME_DELAY = 0.05 # 0.01 fast, 0.05 slow
 ROUND_DELAY = 5
 
 seed = random.randint(0, 1e9)
