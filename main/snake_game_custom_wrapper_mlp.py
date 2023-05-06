@@ -7,7 +7,7 @@ import numpy as np
 from snake_game import SnakeGame
 
 class SnakeEnv(gym.Env):
-    def __init__(self, silent_mode=True, seed=0):
+    def __init__(self, silent_mode=True, seed=0, limit_step=True):
         super().__init__()
         self.game = SnakeGame(silent_mode=silent_mode, seed=seed)
         self.action_space = gym.spaces.Discrete(4) # 0: UP, 1: LEFT, 2: RIGHT, 3: DOWN
@@ -22,7 +22,10 @@ class SnakeEnv(gym.Env):
         self.reward_step_counter = 0
 
         # Constants
-        self.step_limit = 3 * self.game.board_size * self.game.board_size # Experimental value: 3*board_size^2 steps should be more than enough to get the food, the snake should not keep looping around
+        if limit_step:
+            self.step_limit = 3 * self.game.board_size * self.game.board_size # Experimental value: 3*board_size^2 steps should be more than enough to get the food, the snake should not keep looping around
+        else:
+            self.step_limit = 1e9 # No step limit
         self.max_snake_length = self.game.board_size * self.game.board_size # Max length of snake is board_size*board_size, which is 21*21=441 for current setting.
         self.size_coefficient = 4.0 / self.max_snake_length # Keep the range of e^x in [-2, 2] 
 
@@ -75,7 +78,8 @@ class SnakeEnv(gym.Env):
         obs = np.zeros((self.game.board_size, self.game.board_size), dtype=np.float32)
         obs[tuple(np.transpose(self.game.snake))] = 0.5
         obs[tuple(self.game.snake[0])] = 1.0
-        obs[tuple(self.game.food)] = -1.0
+        for food in self.game.food_list:
+            obs[tuple(food)] = -1.0
         return obs
 
 # Test the environment using random actions

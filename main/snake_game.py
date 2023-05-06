@@ -124,7 +124,7 @@ class SnakeGame:
             "snake_length": len(self.snake),
             "snake_head_pos": np.array(self.snake[0]),
             "prev_snake_head_pos": np.array(self.snake[1]),
-            # "food_pos": np.array(self.food),
+            "food_pos": np.array(random.sample(self.food_list, 1)[0]),
             "food_obtained": food_obtained
         }
 
