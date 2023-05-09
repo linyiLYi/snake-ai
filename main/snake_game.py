@@ -57,7 +57,6 @@ class SnakeGame:
         self.food_list = set([self._generate_food() for _ in range(NUM_FOOD)])
 
         self.score = 0
-        return 0
 
     def step(self, action):
 

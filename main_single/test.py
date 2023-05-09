@@ -7,7 +7,7 @@ from sb3_contrib import MaskablePPO
 
 from snake_game_custom_wrapper_v2 import SnakeEnv
 
-MODEL_PATH = r"trained_models_new_snake_and_reward/ppo_snake_35000000_steps"
+MODEL_PATH = r"trained_models_new_snake_and_reward/ppo_snake_final"
 
 NUM_EPISODE = 10
 
@@ -89,8 +89,8 @@ for episode in range(NUM_EPISODE):
         num_step += 1
 
         # Give the AI agent 10 retries if it collides with itself or the wall.
-        i_retry = 0
-        game_over = check_game_over(env, action)
+        # i_retry = 0
+        # game_over = check_game_over(env, action)
 
         # Testing the mask.
         # print(env.get_action_mask())

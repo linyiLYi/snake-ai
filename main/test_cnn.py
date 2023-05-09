@@ -10,7 +10,7 @@ MODEL_PATH_L = r"trained_models/cnn_mask_ff_02_53500000_steps"   # With num_food
 MODEL_PATH_X = r"trained_models/cnn_mask_ws_04_8500000_steps"    # With warm start length of 140. ("ws" for warm start)
 
 RENDER = False
-NUM_EPISODE = 3
+NUM_EPISODE = 10
 FRAME_DELAY = 0.01 # 0.01 fast, 0.05 slow
 ROUND_DELAY = 5
 

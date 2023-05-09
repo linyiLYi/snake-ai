@@ -8,8 +8,10 @@ import numpy as np
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
+NUM_FOOD = 1
+
 class SnakeGame:
-    def __init__(self, seed=0, board_size=12, silent_mode=True):
+    def __init__(self, seed=0, board_size=12, silent_mode=True, fix_seed=False):
         # Set random seed
         random.seed(seed)
         
@@ -22,25 +24,32 @@ class SnakeGame:
         self.display_width = self.width + 2 * self.border_size
         self.display_height = self.height + 2 * self.border_size + 40
 
-        if silent_mode:
-            self.screen = None
-            self.font = None
-        else:
+        if not silent_mode:
             pygame.init()
             pygame.display.set_caption("Snake Game")
             self.screen = pygame.display.set_mode((self.display_width, self.display_height))
             self.font = pygame.font.Font(None, 36)
+        else:
+            self.screen = None
+            self.font = None
 
-        self.snake = [(self.board_size // 2 + i, self.board_size // 2) for i in range(1, -2, -1)]
-        self.direction = "DOWN" # Snake is moving down initially in each round
-        self.food = self._generate_food()
+        self.snake = None
+        self.direction = None
+        self.food_list = None
         self.score = 0
 
+        self.fix_seed = fix_seed
+        self.seed_value = seed
+        
+        self.reset()
+
     def reset(self):
+        if self.fix_seed:
+            random.seed(self.seed_value)
         # Initialize the snake with three cells (row, column)
         self.snake = [(self.board_size // 2 + i, self.board_size // 2) for i in range(1, -2, -1)]
         self.direction = "DOWN" # Snake is moving down initially in each round
-        self.food = self._generate_food()
+        self.food_list = set([self._generate_food() for _ in range(NUM_FOOD)])
         self.score = 0
 
     def step(self, action):
@@ -58,16 +67,17 @@ class SnakeGame:
         elif self.direction == "RIGHT":
             col += 1
 
-        food_obtained = False
-
         # Check if snake ate food
         # If snake ate food, it won't pop the last cell
-        if (row, col) == self.food:
+        food_obtained = False
+        for food in self.food_list:
+            if (row, col) == food:
+                self.score += 10 # Add 10 points to the score when food is eaten
+                food_obtained = True
+                break
             
-            # Add 10 points to the score when food is eaten
-            self.score += 10
-            food_obtained = True
-        
+        if food_obtained:
+            self.food_list.remove(food) # Don't pop the last cell if food is eaten.
         else:
             self.snake.pop()
 
@@ -82,14 +92,16 @@ class SnakeGame:
 
         if not done:
             self.snake.insert(0, (row, col))
+
+        # Add new food after snake movement completes.
         if food_obtained:
-            self.food = self._generate_food()
+            self.food_list.add(self._generate_food())
 
         info ={
             "snake_size": len(self.snake),
             "snake_head_pos": np.array(self.snake[0]),
             "prev_snake_head_pos": np.array(self.snake[1]),
-            "food_pos": np.array(self.food),
+            "food_pos": np.array(random.sample(self.food_list, 1)[0]),
             "food_obtained": food_obtained
         }
 
@@ -178,8 +190,9 @@ class SnakeGame:
         self.draw_snake()
         
         # Draw food
-        r, c = self.food
-        pygame.draw.rect(self.screen, (255, 0, 0), (c * self.cell_size + self.border_size, r * self.cell_size + self.border_size, self.cell_size, self.cell_size))
+        for food in self.food_list:
+            r, c = food
+            pygame.draw.rect(self.screen, (255, 0, 0), (c * self.cell_size + self.border_size, r * self.cell_size + self.border_size, self.cell_size, self.cell_size))
 
         # Draw score
         self.draw_score()
@@ -208,7 +221,7 @@ class SnakeGame:
         pygame.draw.circle(self.screen, (255, 255, 255), (head_x + self.cell_size - eye_offset, head_y + eye_offset), eye_size)
 
         # Draw the body
-        color_list = np.linspace(255, 10, len(self.snake), dtype=np.uint8)
+        color_list = np.linspace(255, 100, len(self.snake), dtype=np.uint8)
         i = 1
         for r, c in self.snake[1:]:
             body_x = c * self.cell_size + self.border_size
@@ -225,7 +238,7 @@ class SnakeGame:
 
 if __name__ == "__main__":
 
-    game = SnakeGame()
+    game = SnakeGame(seed=114514, fix_seed=True)
     pygame.init()
     game.screen = pygame.display.set_mode((game.display_width, game.display_height))
     pygame.display.set_caption("Snake Game")

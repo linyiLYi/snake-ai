@@ -6,9 +6,9 @@ import numpy as np
 from snake_game import SnakeGame
 
 class SnakeEnv(gym.Env):
-    def __init__(self, seed=0, board_size=21, silent_mode=True):
+    def __init__(self, seed=0, board_size=12, silent_mode=True, limit_step=True, fix_seed=False):
         super().__init__()
-        self.game = SnakeGame(seed=seed, board_size=board_size, silent_mode=silent_mode)
+        self.game = SnakeGame(seed=seed, board_size=board_size, silent_mode=silent_mode, fix_seed=fix_seed)
         self.game.reset()
 
         self.action_space = gym.spaces.Discrete(4) # 0: UP, 1: LEFT, 2: RIGHT, 3: DOWN
@@ -19,15 +19,17 @@ class SnakeEnv(gym.Env):
             dtype=np.uint8
         )
 
-        self.penalty_boost_factor = 10
-
         self.board_size = board_size
         self.grid_size = board_size ** 2 # Max length of snake is board_size^2
         self.init_snake_size = len(self.game.snake)
         self.max_growth = self.grid_size - self.init_snake_size
-        self.median_size = self.init_snake_size + self.max_growth / 2
 
         self.done = False
+
+        if limit_step:
+            self.step_limit = self.grid_size * 4 # More than enough steps to get the food.
+        else:
+            self.step_limit = 1e9 # Basically no limit.
         self.reward_step_counter = 0
 
     def reset(self):
@@ -46,41 +48,49 @@ class SnakeEnv(gym.Env):
         reward = 0.0
         self.reward_step_counter += 1
 
-        if info["food_obtained"]: # food eaten
-            # Reward on num_steps between getting food.
-            reward_speed = math.exp((self.grid_size - self.reward_step_counter) / self.grid_size)
-            reward_speed = reward_speed / math.e / 2 # Normalize to (0, 0.5).
-
-            info["food_reward_on_speed"] = reward_speed * 0.1
-            
-            # Further boost the reward on snake size to encourage startegy for growing longer. (Actually not used due to lack of time.)
-            reward_size = math.exp(info["snake_size"] / self.median_size)
-            reward_size = reward_size / math.e # Normalize to (0, e).
-            info["food_reward_on_size"] = reward_size * 0.1
-
-            reward = reward_speed + reward_size
-
-            # info["reward_step_counter"] = self.reward_step_counter # Save reward step counter for debugging
-            self.reward_step_counter = 0 # Reset reward step counter
+        if self.reward_step_counter > self.step_limit: # Step limit reached, game over.
+            self.reward_step_counter = 0
+            self.done = True
         
-        elif self.done: # Snake bumps into wall or itself. Episode is over.
+        if self.done: # Snake bumps into wall or itself. Episode is over.
             # Game Over penalty is based on snake size.
-            reward = - math.exp((self.median_size - info["snake_size"]) / self.median_size) / math.e * self.penalty_boost_factor
+            reward = - math.pow(self.max_growth, (self.grid_size - info["snake_size"]) / self.max_growth) # (-max_growth, -1)
+            reward = reward * 0.1
+            return obs, reward, self.done, info
+        
+            # Linear penalty decay.
+            # reward = info["snake_size"] - self.grid_size # (-max_growth, 0)
+            # reward = reward * 0.1
+            # return obs, reward, self.done, info
+        
+        elif info["food_obtained"]: # food eaten
+            # Initial training: reward boost on speed.
+            # reward = math.exp((self.grid_size - self.reward_step_counter) / self.grid_size) # (0, e)
+            # reward = reward * 0.1
+            # self.reward_step_counter = 0 # Reset reward step counter
+
+            # Finetune: linear reward boost on size rather than speed.
+            reward = info["snake_size"] / self.grid_size * 10
+            reward = reward * 0.1
+            self.reward_step_counter = 0 # Reset reward step counter
+
         
         else:
             # Give a tiny reward/penalty to the agent based on whether it is heading towards the food or not.
             # Not competing with game over penalty or the food eaten reward.
             if np.linalg.norm(info["snake_head_pos"] - info["food_pos"]) < np.linalg.norm(info["prev_snake_head_pos"] - info["food_pos"]):
-                reward = 1 / max(20, info["snake_size"]) # Set a upper limit of 0.05 for approach/away reward.
+                reward = 1 / info["snake_size"] # No upper limit might enable the agent to master shorter scenario faster and more firmly.
             else:
-                reward = - 1 / max(20, info["snake_size"])
-            info["step_reward"] = reward
+                reward = - 1 / info["snake_size"]
+            reward = reward * 0.1
 
-        # max_score: 438 (food reward)
-        # low_score: -10 (direct lose) 
-        # reward = reward * 0.1 # Scale reward to be in range [-1, 43.8]
+        # max_score: 144e - 1 = 390
+        # min_score: -141 
+        # Scaled to [-14.1, 39]
 
-        reward = reward * 0.1
+        # Linear:
+        # max_score: 705
+        # min_score: -141
 
         return obs, reward, self.done, info
     
@@ -138,7 +148,7 @@ class SnakeEnv(gym.Env):
         obs = np.zeros((self.game.board_size, self.game.board_size), dtype=np.uint8)
 
         # Set the snake body to gray with linearly decreasing intensity from head to tail.
-        obs[tuple(np.transpose(self.game.snake))] = np.linspace(255, 10, len(self.game.snake), dtype=np.uint8)
+        obs[tuple(np.transpose(self.game.snake))] = np.linspace(200, 50, len(self.game.snake), dtype=np.uint8)
         
         # Stack single layer into 3-channel-image.
         obs = np.stack((obs, obs, obs), axis=-1)
@@ -148,20 +158,21 @@ class SnakeEnv(gym.Env):
         obs[tuple(self.game.snake[-1])] = [255, 0, 0]
 
         # Set the food to red
-        obs[tuple(self.game.food)] = [0, 0, 255]
+        for food in self.game.food_list:
+            obs[tuple(food)] = [0, 0, 255]
 
         # Enlarge the observation to 84x84
-        obs = np.repeat(np.repeat(obs, 4, axis=0), 4, axis=1)
+        obs = np.repeat(np.repeat(obs, 7, axis=0), 7, axis=1)
 
         return obs
 
 # Test the environment using random actions
-NUM_EPISODES = 100
-RENDER_DELAY = 0.001
-from matplotlib import pyplot as plt
+# NUM_EPISODES = 100
+# RENDER_DELAY = 0.001
+# from matplotlib import pyplot as plt
 
-if __name__ == "__main__":
-    env = SnakeEnv(silent_mode=False)
+# if __name__ == "__main__":
+#     env = SnakeEnv(silent_mode=False)
     
     # # Test Init Efficiency
     # print(MODEL_PATH_S)
