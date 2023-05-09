@@ -7,8 +7,7 @@ from sb3_contrib import MaskablePPO
 
 from snake_game_custom_wrapper_cnn import SnakeEnv
 
-# MODEL_PATH = r"trained_models_cnn_01_finetune_04_fixed_seed/ppo_snake_17000000_steps"
-MODEL_PATH = r"trained_models/ppo_snake_4000000_steps"
+MODEL_PATH = r"trained_models/ppo_snake_13000000_steps"
 
 NUM_EPISODE = 5
 
@@ -16,7 +15,7 @@ RENDER = True
 FRAME_DELAY = 0.01 # 0.01 fast, 0.05 slow
 ROUND_DELAY = 5
 
-FIX_SEED = False
+FIX_SEED = True
 SEED_VALUE = 114514
 
 seed = random.randint(0, 1e9)

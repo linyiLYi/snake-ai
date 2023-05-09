@@ -135,6 +135,8 @@ class SnakeGame:
                 self.direction = "DOWN"
 
     def _generate_food(self):
+        if self.fix_seed:
+            random.seed(self.seed_value)
         food = (random.randint(0, self.board_size - 1), random.randint(0, self.board_size - 1))
         while food in self.snake:
             food = (random.randint(0, self.board_size - 1), random.randint(0, self.board_size - 1))
@@ -262,7 +264,7 @@ if __name__ == "__main__":
     start_button = game.font.render("START", True, (0, 0, 0))
     retry_button = game.font.render("RETRY", True, (0, 0, 0))
 
-    update_interval = 0.1
+    update_interval = 0.2
     start_time = time.time()
     action = -1
 
