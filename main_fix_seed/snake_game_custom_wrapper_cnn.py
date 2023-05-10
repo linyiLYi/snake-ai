@@ -48,7 +48,12 @@ class SnakeEnv(gym.Env):
         reward = 0.0
         self.reward_step_counter += 1
 
-        if self.reward_step_counter > self.step_limit: # Step limit reached, game over.
+        if info["snake_size"] == self.grid_size: # Snake fills up the entire board. Game over.
+            reward = self.max_growth * 0.1 # Victory reward
+            self.done = True
+            return obs, reward, self.done, info
+        
+        elif self.reward_step_counter > self.step_limit: # Step limit reached, game over.
             self.reward_step_counter = 0
             self.done = True
         
@@ -71,7 +76,7 @@ class SnakeEnv(gym.Env):
                 reward = - 1 / info["snake_size"]
             reward = reward * 0.1
 
-        # max_score: 72
+        # max_score: 72 + 14.1 = 86.1
         # min_score: -14.1
 
         return obs, reward, self.done, info

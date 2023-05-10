@@ -137,9 +137,12 @@ class SnakeGame:
     def _generate_food(self):
         if self.fix_seed:
             random.seed(self.seed_value)
-        food = (random.randint(0, self.board_size - 1), random.randint(0, self.board_size - 1))
-        while food in self.snake:
+        if len(self.snake) < self.board_size ** 2:
             food = (random.randint(0, self.board_size - 1), random.randint(0, self.board_size - 1))
+            while food in self.snake:
+                food = (random.randint(0, self.board_size - 1), random.randint(0, self.board_size - 1))
+        else: # If the snake occupies the entire board, don't generate food.
+            food = (0, 0)
         return food
     
     def draw_score(self):

@@ -73,20 +73,20 @@ def main():
         tensorboard_log=LOG_DIR
     )
 
-    # finetune
-    # lr_schedule = linear_schedule(1e-5, 2.5e-6)
-    # clip_range_schedule = linear_schedule(0.15, 0.025)
+    # continue
+    # lr_schedule = linear_schedule(2e-4, 2.5e-6)
+    # clip_range_schedule = linear_schedule(0.1205, 0.025)
     
     # custom_objects = {
     #     "learning_rate": lr_schedule,
     #     "clip_range": clip_range_schedule
     # }
     
-    # model_path = "trained_models_cnn_01_finetune_01/ppo_snake_final.zip"
-    # model = MaskablePPO.load(model_path, env=env, device="cuda")#, custom_objects=custom_objects)
+    # model_path = "trained_models/ppo_snake_23000000_steps.zip"
+    # model = MaskablePPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
     # Set the save directory
-    save_dir = "trained_models"
+    save_dir = "trained_models_02"
     os.makedirs(save_dir, exist_ok=True)
 
     checkpoint_interval = 15625 # checkpoint_interval * num_envs = total_steps_per_checkpoint
