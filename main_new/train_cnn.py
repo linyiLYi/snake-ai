@@ -9,10 +9,14 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 from sb3_contrib import MaskablePPO
 from sb3_contrib.common.wrappers import ActionMasker
 
-from snake_game_custom_wrapper_v2 import SnakeEnv
+from snake_game_custom_wrapper_cnn import SnakeEnv
 
 NUM_ENV = 32
 LOG_DIR = "logs"
+
+FIX_SEED = True
+SEED_VALUE = 114514
+
 os.makedirs(LOG_DIR, exist_ok=True)
 
 # Linear scheduler
@@ -30,10 +34,14 @@ def linear_schedule(initial_value, final_value=0.0):
 
 def make_env(seed=0):
     def _init():
-        env = SnakeEnv(seed=seed)
+        if FIX_SEED:
+            env = SnakeEnv(seed=SEED_VALUE, fix_seed=True)
+        else:        
+            env = SnakeEnv(seed=seed)
         env = ActionMasker(env, SnakeEnv.get_action_mask)
         env = Monitor(env)
-        env.seed(seed)
+        if not FIX_SEED:
+            env.seed(seed)
         return env
     return _init
 
@@ -65,18 +73,20 @@ def main():
         tensorboard_log=LOG_DIR
     )
 
-    # Train 02.
-    # lr_schedule = linear_schedule(5e-5, 2.5e-6)
-    # clip_range_schedule = linear_schedule(0.075, 0.025)
+    # continue
+    # lr_schedule = linear_schedule(2e-4, 2.5e-6)
+    # clip_range_schedule = linear_schedule(0.1205, 0.025)
+    
     # custom_objects = {
     #     "learning_rate": lr_schedule,
-    #     "clip_range": clip_range_schedule,
+    #     "clip_range": clip_range_schedule
     # }
-    # model_path = "trained_models/ppo_snake_150000000_steps"
+    
+    # model_path = "trained_models/ppo_snake_23000000_steps.zip"
     # model = MaskablePPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
     # Set the save directory
-    save_dir = "trained_models_new_snake_and_reward"
+    save_dir = "trained_models_02"
     os.makedirs(save_dir, exist_ok=True)
 
     checkpoint_interval = 15625 # checkpoint_interval * num_envs = total_steps_per_checkpoint

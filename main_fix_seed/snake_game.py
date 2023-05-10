@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 import random
 
 import numpy as np
@@ -17,6 +16,7 @@ class SnakeGame:
         random.seed(seed)
         
         self.board_size = board_size
+        self.grid_size = self.board_size ** 2
         self.cell_size = 40
         self.width = self.board_size * self.cell_size
         self.height = self.width
@@ -36,6 +36,7 @@ class SnakeGame:
             mixer.init()
             self.sound_eat = mixer.Sound("sound/eat.wav")
             self.sound_game_over = mixer.Sound("sound/game_over.wav")
+            self.sound_victory = mixer.Sound("sound/victory.wav")
         else:
             self.screen = None
             self.font = None
@@ -47,7 +48,7 @@ class SnakeGame:
 
         self.fix_seed = fix_seed
         self.seed_value = seed
-        
+
         self.reset()
 
     def reset(self):
@@ -101,8 +102,12 @@ class SnakeGame:
 
         if not done:
             self.snake.insert(0, (row, col))
+
         elif not self.silent_mode:
-            self.sound_game_over.play()
+            if len(self.snake) < self.grid_size:
+                self.sound_game_over.play()
+            else:
+                self.sound_victory.play()
 
         # Add new food after snake movement completes.
         if food_obtained:
@@ -137,7 +142,8 @@ class SnakeGame:
     def _generate_food(self):
         if self.fix_seed:
             random.seed(self.seed_value)
-        if len(self.snake) < self.board_size ** 2:
+        
+        if len(self.snake) < self.grid_size:
             food = (random.randint(0, self.board_size - 1), random.randint(0, self.board_size - 1))
             while food in self.snake:
                 food = (random.randint(0, self.board_size - 1), random.randint(0, self.board_size - 1))
@@ -206,9 +212,10 @@ class SnakeGame:
         self.draw_snake()
         
         # Draw food
-        for food in self.food_list:
-            r, c = food
-            pygame.draw.rect(self.screen, (255, 0, 0), (c * self.cell_size + self.border_size, r * self.cell_size + self.border_size, self.cell_size, self.cell_size))
+        if len(self.snake) < self.grid_size: # If the snake occupies the entire board, don't draw food.
+            for food in self.food_list:
+                r, c = food
+                pygame.draw.rect(self.screen, (255, 0, 0), (c * self.cell_size + self.border_size, r * self.cell_size + self.border_size, self.cell_size, self.cell_size))
 
         # Draw score
         self.draw_score()
@@ -253,6 +260,7 @@ class SnakeGame:
         
 
 if __name__ == "__main__":
+    import time
 
     game = SnakeGame(seed=114514, silent_mode=False, fix_seed=True)
     pygame.init()

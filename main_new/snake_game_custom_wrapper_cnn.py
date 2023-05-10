@@ -48,49 +48,36 @@ class SnakeEnv(gym.Env):
         reward = 0.0
         self.reward_step_counter += 1
 
-        if self.reward_step_counter > self.step_limit: # Step limit reached, game over.
+        if info["snake_size"] == self.grid_size: # Snake fills up the entire board. Game over.
+            reward = self.max_growth * 0.1 # Victory reward
+            self.done = True
+            return obs, reward, self.done, info
+        
+        elif self.reward_step_counter > self.step_limit: # Step limit reached, game over.
             self.reward_step_counter = 0
             self.done = True
         
         if self.done: # Snake bumps into wall or itself. Episode is over.
             # Game Over penalty is based on snake size.
-            reward = - math.pow(self.max_growth, (self.grid_size - info["snake_size"]) / self.max_growth) # (-max_growth, -1)
+            reward = - math.pow(self.max_growth, (self.grid_size - info["snake_size"]) / self.max_growth) # (-max_growth, -1)            
             reward = reward * 0.1
             return obs, reward, self.done, info
-        
-            # Linear penalty decay.
-            # reward = info["snake_size"] - self.grid_size # (-max_growth, 0)
-            # reward = reward * 0.1
-            # return obs, reward, self.done, info
-        
-        elif info["food_obtained"]: # food eaten
-            # Initial training: reward boost on speed.
-            # reward = math.exp((self.grid_size - self.reward_step_counter) / self.grid_size) # (0, e)
-            # reward = reward * 0.1
-            # self.reward_step_counter = 0 # Reset reward step counter
-
-            # Finetune: linear reward boost on size rather than speed.
-            reward = info["snake_size"] / self.grid_size * 10
-            reward = reward * 0.1
+          
+        elif info["food_obtained"]: # Food eaten. Reward boost on snake size.
+            reward = info["snake_size"] / self.grid_size
             self.reward_step_counter = 0 # Reset reward step counter
-
         
         else:
             # Give a tiny reward/penalty to the agent based on whether it is heading towards the food or not.
             # Not competing with game over penalty or the food eaten reward.
             if np.linalg.norm(info["snake_head_pos"] - info["food_pos"]) < np.linalg.norm(info["prev_snake_head_pos"] - info["food_pos"]):
-                reward = 1 / info["snake_size"] # No upper limit might enable the agent to master shorter scenario faster and more firmly.
+                reward = 1 / info["snake_size"]
             else:
                 reward = - 1 / info["snake_size"]
             reward = reward * 0.1
 
-        # max_score: 144e - 1 = 390
-        # min_score: -141 
-        # Scaled to [-14.1, 39]
-
-        # Linear:
-        # max_score: 705
-        # min_score: -141
+        # max_score: 72 + 14.1 = 86.1
+        # min_score: -14.1
 
         return obs, reward, self.done, info
     
@@ -129,14 +116,30 @@ class SnakeEnv(gym.Env):
             else:
                 row += 1
 
-        # Check if snake collided with itself or the wall
-        game_over = (
-            (row, col) in snake_list
-            or row < 0
-            or row >= self.board_size
-            or col < 0
-            or col >= self.board_size
-        )
+        # Check if snake collided with itself or the wall. Note that the tail of the snake would be poped if the snake did not eat food in the current step.
+        # Check if snake ate food. If snake ate food, it won't pop the last cell
+        food_obtained = False
+        for food in self.game.food_list:
+            if (row, col) == food:
+                food_obtained = True
+                break
+            
+        if food_obtained:
+            game_over = (
+                (row, col) in snake_list # The snake won't pop the last cell if it ate food.
+                or row < 0
+                or row >= self.board_size
+                or col < 0
+                or col >= self.board_size
+            )
+        else:
+            game_over = (
+                (row, col) in snake_list[:-1] # The snake will pop the last cell if it did not eat food.
+                or row < 0
+                or row >= self.board_size
+                or col < 0
+                or col >= self.board_size
+            )
 
         if game_over:
             return False

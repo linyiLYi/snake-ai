@@ -7,12 +7,12 @@ from sb3_contrib import MaskablePPO
 
 from snake_game_custom_wrapper_cnn import SnakeEnv
 
-MODEL_PATH = r"trained_models_cnn_01_finetune_02_fixed_seed/ppo_snake_3500000_steps"
+MODEL_PATH = r"trained_models/ppo_snake_23000000_steps"
 
 NUM_EPISODE = 10
 
-RENDER = False
-FRAME_DELAY = 0.02 # 0.01 fast, 0.05 slow
+RENDER = True
+FRAME_DELAY = 0.01 # 0.01 fast, 0.05 slow
 ROUND_DELAY = 5
 
 FIX_SEED = True
@@ -74,8 +74,11 @@ for episode in range(NUM_EPISODE):
         obs, reward, done, info = env.step(action)
         
         if done:
-            last_action = ["UP", "LEFT", "RIGHT", "DOWN"][action]
-            print(f"Gameover Penalty: {reward:.4f}. Last action: {last_action}")
+            if info["snake_size"] == env.game.board_size ** 2:
+                print(f"You are BREATHTAKING! Victory reward: {reward:.4f}.")
+            else:
+                last_action = ["UP", "LEFT", "RIGHT", "DOWN"][action]
+                print(f"Gameover Penalty: {reward:.4f}. Last action: {last_action}")
             
             # print(f"Previous direction: {prev_direction}")
             # print(f"Final direction: {env.game.direction}")

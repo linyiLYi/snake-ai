@@ -7,12 +7,12 @@ from sb3_contrib import MaskablePPO
 
 from snake_game_custom_wrapper_cnn import SnakeEnv
 
-MODEL_PATH = r"trained_models/ppo_snake_23000000_steps"
+MODEL_PATH = r"trained_models_02/ppo_snake_37000000_steps"
 
 NUM_EPISODE = 10
 
 RENDER = True
-FRAME_DELAY = 0.01 # 0.01 fast, 0.05 slow
+FRAME_DELAY = 0.03 # 0.01 fast, 0.05 slow
 ROUND_DELAY = 5
 
 FIX_SEED = True
