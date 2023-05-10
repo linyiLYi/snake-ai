@@ -11,6 +11,8 @@ class SnakeEnv(gym.Env):
         self.game = SnakeGame(seed=seed, board_size=board_size, silent_mode=silent_mode, fix_seed=fix_seed)
         self.game.reset()
 
+        self.silent_mode = silent_mode
+
         self.action_space = gym.spaces.Discrete(4) # 0: UP, 1: LEFT, 2: RIGHT, 3: DOWN
         
         self.observation_space = gym.spaces.Box(
@@ -51,9 +53,11 @@ class SnakeEnv(gym.Env):
         if info["snake_size"] == self.grid_size: # Snake fills up the entire board. Game over.
             reward = self.max_growth * 0.1 # Victory reward
             self.done = True
+            if not self.silent_mode:
+                self.game.sound_victory.play()
             return obs, reward, self.done, info
         
-        elif self.reward_step_counter > self.step_limit: # Step limit reached, game over.
+        if self.reward_step_counter > self.step_limit: # Step limit reached, game over.
             self.reward_step_counter = 0
             self.done = True
         

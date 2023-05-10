@@ -9,7 +9,7 @@ import pygame
 from pygame import mixer
 
 class SnakeGame:
-    def __init__(self, seed=0, board_size=12, silent_mode=True):        
+    def __init__(self, seed=0, board_size=12, silent_mode=True):
         self.board_size = board_size
         self.grid_size = self.board_size ** 2
         self.cell_size = 40
@@ -91,7 +91,7 @@ class SnakeGame:
             self.snake.insert(0, (row, col))
             self.non_snake.remove((row, col))
 
-        elif not self.silent_mode: # If game is over and the game is not in silent mode, play game over sound effect.
+        else: # If game is over and the game is not in silent mode, play game over sound effect.
             if len(self.snake) < self.grid_size:
                 self.sound_game_over.play()
             else:
@@ -244,7 +244,8 @@ class SnakeGame:
 if __name__ == "__main__":
     import time
 
-    game = SnakeGame(seed=114514, silent_mode=False)
+    seed = random.randint(0, 1e9)
+    game = SnakeGame(seed=seed, silent_mode=False)
     pygame.init()
     game.screen = pygame.display.set_mode((game.display_width, game.display_height))
     pygame.display.set_caption("Snake Game")
@@ -257,7 +258,7 @@ if __name__ == "__main__":
     start_button = game.font.render("START", True, (0, 0, 0))
     retry_button = game.font.render("RETRY", True, (0, 0, 0))
 
-    update_interval = 0.1
+    update_interval = 0.15
     start_time = time.time()
     action = -1
 

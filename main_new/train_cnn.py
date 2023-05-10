@@ -14,9 +14,6 @@ from snake_game_custom_wrapper_cnn import SnakeEnv
 NUM_ENV = 32
 LOG_DIR = "logs"
 
-FIX_SEED = True
-SEED_VALUE = 114514
-
 os.makedirs(LOG_DIR, exist_ok=True)
 
 # Linear scheduler
@@ -34,14 +31,10 @@ def linear_schedule(initial_value, final_value=0.0):
 
 def make_env(seed=0):
     def _init():
-        if FIX_SEED:
-            env = SnakeEnv(seed=SEED_VALUE, fix_seed=True)
-        else:        
-            env = SnakeEnv(seed=seed)
+        env = SnakeEnv(seed=seed)
         env = ActionMasker(env, SnakeEnv.get_action_mask)
         env = Monitor(env)
-        if not FIX_SEED:
-            env.seed(seed)
+        env.seed(seed)
         return env
     return _init
 
@@ -56,7 +49,7 @@ def main():
     env = SubprocVecEnv([make_env(seed=s) for s in seed_set])
 
     lr_schedule = linear_schedule(2.5e-4, 2.5e-6)
-    clip_range_schedule = linear_schedule(0.15, 0.025)
+    clip_range_schedule = linear_schedule(0.150, 0.025)
 
     # Instantiate a PPO agent
     model = MaskablePPO(
@@ -82,11 +75,11 @@ def main():
     #     "clip_range": clip_range_schedule
     # }
     
-    # model_path = "trained_models/ppo_snake_23000000_steps.zip"
+    # model_path = "trained_models/ppo_snake_steps.zip"
     # model = MaskablePPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
     # Set the save directory
-    save_dir = "trained_models_02"
+    save_dir = "trained_models"
     os.makedirs(save_dir, exist_ok=True)
 
     checkpoint_interval = 15625 # checkpoint_interval * num_envs = total_steps_per_checkpoint

@@ -2,12 +2,10 @@ import time
 import random
 
 from sb3_contrib import MaskablePPO
-# import numpy as np # For debugging.
-# import matplotlib.pyplot as plt # For checking raw observation.
 
 from snake_game_custom_wrapper_cnn import SnakeEnv
 
-MODEL_PATH = r"trained_models/ppo_snake_23000000_steps"
+MODEL_PATH = r"trained_models/ppo_snake_final"
 
 NUM_EPISODE = 10
 
@@ -15,25 +13,13 @@ RENDER = True
 FRAME_DELAY = 0.01 # 0.01 fast, 0.05 slow
 ROUND_DELAY = 5
 
-FIX_SEED = True
-SEED_VALUE = 114514
-
 seed = random.randint(0, 1e9)
-if FIX_SEED:
-    print(f"Using fixed seed {SEED_VALUE} for testing.")
-else:
-    print(f"Using seed = {seed} for testing.")
+print(f"Using seed = {seed} for testing.")
 
 if RENDER:
-    if FIX_SEED:
-        env = SnakeEnv(seed=SEED_VALUE, limit_step=False, silent_mode=False, fix_seed=True)
-    else:
-        env = SnakeEnv(seed=seed, limit_step=False, silent_mode=False)
+    env = SnakeEnv(seed=seed, limit_step=False, silent_mode=False)
 else:
-    if FIX_SEED:
-        env = SnakeEnv(seed=SEED_VALUE, limit_step=False, silent_mode=True, fix_seed=True)
-    else:
-        env = SnakeEnv(seed=seed, limit_step=False, silent_mode=True)
+    env = SnakeEnv(seed=seed, limit_step=False, silent_mode=True)
 
 # Load the trained model
 model = MaskablePPO.load(MODEL_PATH)
@@ -56,45 +42,25 @@ for episode in range(NUM_EPISODE):
     retry_limit = 9
     print(f"=================== Episode {episode + 1} ==================")
     while not done:
-
         action, _ = model.predict(obs, action_masks=env.get_action_mask())
-        
         prev_mask = env.get_action_mask()
-        # if np.sum(prev_mask) <= 1:
-        #     print(prev_mask)
-        #     time.sleep(5)
         prev_direction = env.game.direction
-
         num_step += 1
-        
-        # Check observation.
-        # plt.imshow(obs, interpolation='nearest')
-        # plt.show()
-
         obs, reward, done, info = env.step(action)
-        
+
         if done:
-            if info["snake_size"] == env.game.board_size ** 2:
+            if info["snake_size"] == env.game.grid_size:
                 print(f"You are BREATHTAKING! Victory reward: {reward:.4f}.")
             else:
                 last_action = ["UP", "LEFT", "RIGHT", "DOWN"][action]
                 print(f"Gameover Penalty: {reward:.4f}. Last action: {last_action}")
-            
-            # print(f"Previous direction: {prev_direction}")
-            # print(f"Final direction: {env.game.direction}")
-            # print(f"Prev mask: {prev_mask}")
-            # print(f"Current mask: {env.get_action_mask()}")
-            # time.sleep(6000)
-        
+
         elif info["food_obtained"]:
-            # print(f"Food obtained at step {num_step:04d}. Food Reward: {reward:.4f}. Step Reward: {sum_step_reward:.4f}")
             print(f"Food obtained at step {num_step:04d}. Food Reward: {reward:.4f}. Step Reward: {sum_step_reward:.4f}")
-            # print(info["reward_step_counter"]) # Debug
-            sum_step_reward = 0 # Debug
+            sum_step_reward = 0 
 
         else:
             sum_step_reward += reward
-            # print(info["step_reward"], info["snake_size"]) # Debug
             
         episode_reward += reward
         if RENDER:

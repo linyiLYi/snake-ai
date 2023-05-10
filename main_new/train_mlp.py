@@ -10,7 +10,7 @@ from sb3_contrib.common.wrappers import ActionMasker
 
 from snake_game_custom_wrapper_mlp import SnakeEnv
 
-NUM_ENV = 16
+NUM_ENV = 32
 LOG_DIR = "logs"
 os.makedirs(LOG_DIR, exist_ok=True)
 
@@ -46,40 +46,29 @@ def main():
     # Create the Snake environment.
     env = SubprocVecEnv([make_env(seed=s) for s in seed_set])
 
-    # lr_schedule = linear_schedule(2.5e-4, 2.5e-6)
-    # clip_range_schedule = linear_schedule(0.15, 0.025)
+    lr_schedule = linear_schedule(2.5e-4, 2.5e-6)
+    clip_range_schedule = linear_schedule(0.15, 0.025)
 
     # # Instantiate a PPO agent
-    # model = MaskablePPO(
-    #     "MlpPolicy",
-    #     env,
-    #     device="cuda",
-    #     verbose=1,
-    #     n_steps=2048,
-    #     batch_size=512,
-    #     n_epochs=4,
-    #     gamma=0.94,
-    #     learning_rate=lr_schedule,
-    #     clip_range=clip_range_schedule,
-    #     tensorboard_log=LOG_DIR
-    # )
-
-    lr_schedule = linear_schedule(5e-5, 2.5e-6)
-    clip_range_schedule = linear_schedule(0.075, 0.025)
-    
-    custom_objects = {
-        "learning_rate": lr_schedule,
-        "clip_range": clip_range_schedule
-    }
-    
-    model_path = "trained_models_mlp_04_limit/ppo_snake_final.zip"
-    model = MaskablePPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
+    model = MaskablePPO(
+        "MlpPolicy",
+        env,
+        device="cuda",
+        verbose=1,
+        n_steps=2048,
+        batch_size=512,
+        n_epochs=4,
+        gamma=0.94,
+        learning_rate=lr_schedule,
+        clip_range=clip_range_schedule,
+        tensorboard_log=LOG_DIR
+    )
 
     # Set the save directory
-    save_dir = "trained_models_mlp_05_limit_linear_reward"
+    save_dir = "trained_models_mlp"
     os.makedirs(save_dir, exist_ok=True)
 
-    checkpoint_interval = 31250 # checkpoint_interval * num_envs = total_steps_per_checkpoint
+    checkpoint_interval = 15625 # checkpoint_interval * num_envs = total_steps_per_checkpoint
     checkpoint_callback = CheckpointCallback(save_freq=checkpoint_interval, save_path=save_dir, name_prefix="ppo_snake")
 
     # Writing the training logs from stdout to a file

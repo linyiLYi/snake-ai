@@ -6,10 +6,12 @@ import numpy as np
 from snake_game import SnakeGame
 
 class SnakeEnv(gym.Env):
-    def __init__(self, seed=0, board_size=12, silent_mode=True, limit_step=True, fix_seed=False):
+    def __init__(self, seed=0, board_size=12, silent_mode=True, limit_step=True):
         super().__init__()
-        self.game = SnakeGame(seed=seed, board_size=board_size, silent_mode=silent_mode, fix_seed=fix_seed)
+        self.game = SnakeGame(seed=seed, board_size=board_size, silent_mode=silent_mode)
         self.game.reset()
+
+        self.silent_mode = silent_mode
 
         self.action_space = gym.spaces.Discrete(4) # 0: UP, 1: LEFT, 2: RIGHT, 3: DOWN
         
@@ -51,9 +53,11 @@ class SnakeEnv(gym.Env):
         if info["snake_size"] == self.grid_size: # Snake fills up the entire board. Game over.
             reward = self.max_growth * 0.1 # Victory reward
             self.done = True
+            if not self.silent_mode:
+                self.game.sound_victory.play()
             return obs, reward, self.done, info
         
-        elif self.reward_step_counter > self.step_limit: # Step limit reached, game over.
+        if self.reward_step_counter > self.step_limit: # Step limit reached, game over.
             self.reward_step_counter = 0
             self.done = True
         
@@ -117,14 +121,7 @@ class SnakeEnv(gym.Env):
                 row += 1
 
         # Check if snake collided with itself or the wall. Note that the tail of the snake would be poped if the snake did not eat food in the current step.
-        # Check if snake ate food. If snake ate food, it won't pop the last cell
-        food_obtained = False
-        for food in self.game.food_list:
-            if (row, col) == food:
-                food_obtained = True
-                break
-            
-        if food_obtained:
+        if (row, col) == self.game.food:
             game_over = (
                 (row, col) in snake_list # The snake won't pop the last cell if it ate food.
                 or row < 0
@@ -161,8 +158,7 @@ class SnakeEnv(gym.Env):
         obs[tuple(self.game.snake[-1])] = [255, 0, 0]
 
         # Set the food to red
-        for food in self.game.food_list:
-            obs[tuple(food)] = [0, 0, 255]
+        obs[self.game.food] = [0, 0, 255]
 
         # Enlarge the observation to 84x84
         obs = np.repeat(np.repeat(obs, 7, axis=0), 7, axis=1)
