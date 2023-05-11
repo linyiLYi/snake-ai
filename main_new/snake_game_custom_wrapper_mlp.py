@@ -66,25 +66,8 @@ class SnakeEnv(gym.Env):
             # Reward on num_steps between getting food.
             reward = math.exp((self.grid_size - self.reward_step_counter) / self.grid_size) # (0, e)
             self.reward_step_counter = 0 # Reset reward step counter
-
-            # Linear reward boost.
-            # reward = (self.grid_size - self.reward_step_counter) / self.grid_size # (0, 1)
-            # reward = info["snake_size"] / self.grid_size * 4
-            # self.reward_step_counter = 0 # Reset reward step counter
-            # time.sleep(1)
         
         else:
-            # Give a tiny reward/penalty to the agent based on whether it is heading towards the food or not.
-            # Not competing with game over penalty or the food eaten reward.
-            # if np.linalg.norm(info["snake_head_pos"] - info["food_pos"]) < np.linalg.norm(info["prev_snake_head_pos"] - info["food_pos"]):
-            #     reward = 1 / max(20, info["snake_size"]) # Set a upper limit of 0.05 for approach/away reward.
-            # else:
-            #     reward = - 1 / max(20, info["snake_size"])
-            
-            # Debugging.
-            # print(reward*0.1)
-            # time.sleep(1)
-
             if np.linalg.norm(info["snake_head_pos"] - info["food_pos"]) < np.linalg.norm(info["prev_snake_head_pos"] - info["food_pos"]):
                 reward = 1 / info["snake_size"] # No upper limit might enable the agent to master shorter scenario faster and more firmly.
             else:
@@ -137,14 +120,23 @@ class SnakeEnv(gym.Env):
             else:
                 row += 1
 
-        # Check if snake collided with itself or the wall
-        game_over = (
-            (row, col) in snake_list
-            or row < 0
-            or row >= self.board_size
-            or col < 0
-            or col >= self.board_size
-        )
+        # Check if snake collided with itself or the wall. Note that the tail of the snake would be poped if the snake did not eat food in the current step.
+        if (row, col) == self.game.food:
+            game_over = (
+                (row, col) in snake_list # The snake won't pop the last cell if it ate food.
+                or row < 0
+                or row >= self.board_size
+                or col < 0
+                or col >= self.board_size
+            )
+        else:
+            game_over = (
+                (row, col) in snake_list[:-1] # The snake will pop the last cell if it did not eat food.
+                or row < 0
+                or row >= self.board_size
+                or col < 0
+                or col >= self.board_size
+            )
 
         if game_over:
             return False
@@ -155,9 +147,8 @@ class SnakeEnv(gym.Env):
     def _generate_observation(self):
         obs = np.zeros((self.game.board_size, self.game.board_size), dtype=np.float32)
         obs[tuple(np.transpose(self.game.snake))] = np.linspace(0.8, 0.2, len(self.game.snake), dtype=np.float32)
-        obs[tuple(self.game.snake[0])] = 1.0
-        for food in self.game.food_list:
-            obs[tuple(food)] = -1.0
+        obs[tuple(self.game.snake[0])] = 1.0            
+        obs[tuple(self.game.food)] = -1.0
         return obs
 
 # Test the environment using random actions

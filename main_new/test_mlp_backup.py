@@ -2,10 +2,17 @@ import time
 import random
 
 from sb3_contrib import MaskablePPO
+# import numpy as np # For debugging.
+# import matplotlib.pyplot as plt # For checking raw observation.
 
-from snake_game_custom_wrapper_cnn import SnakeEnv
+from snake_game_custom_wrapper_mlp import SnakeEnv
 
-MODEL_PATH = r"trained_models/ppo_snake_final"
+# Final
+MODEL_PATH = r"trained_models_all/trained_models_mlp_ppo_snake_final"
+
+# Circling
+# MODEL_PATH = r"trained_models_all/trained_models_mlp_03_no_limit_ppo_snake_10000000_steps" # Short
+# MODEL_PATH = r"trained_models_all/trained_models_mlp_03_no_limit_ppo_snake_2000000_steps" # Long
 
 NUM_EPISODE = 10
 
@@ -15,6 +22,7 @@ ROUND_DELAY = 5
 
 seed = random.randint(0, 1e9)
 print(f"Using seed = {seed} for testing.")
+
 
 if RENDER:
     env = SnakeEnv(seed=seed, limit_step=False, silent_mode=False)
@@ -42,27 +50,46 @@ for episode in range(NUM_EPISODE):
     retry_limit = 9
     print(f"=================== Episode {episode + 1} ==================")
     while not done:
+        # action = env.action_space.sample()
         action, _ = model.predict(obs, action_masks=env.get_action_mask())
+        
         prev_mask = env.get_action_mask()
+        # if np.sum(prev_mask) <= 1:
+        #     print(prev_mask)
+        #     time.sleep(5)
         prev_direction = env.game.direction
+
         num_step += 1
+        
+        # Check observation.
+        # plt.imshow(obs, interpolation='nearest')
+        # plt.show()
+
         obs, reward, done, info = env.step(action)
-
+        
         if done:
-            if info["snake_size"] == env.game.grid_size:
-                print(f"You are BREATHTAKING! Victory reward: {reward:.4f}.")
-            else:
-                last_action = ["UP", "LEFT", "RIGHT", "DOWN"][action]
-                print(f"Gameover Penalty: {reward:.4f}. Last action: {last_action}")
-
+            last_action = ["UP", "LEFT", "RIGHT", "DOWN"][action]
+            print(f"Gameover Penalty: {-1.0:.4f}. Last action: {last_action}")
+            # print(f"Gameover Penalty: {reward:.4f}. Last action: {last_action}")
+            
+            # print(f"Previous direction: {prev_direction}")
+            # print(f"Final direction: {env.game.direction}")
+            # print(f"Prev mask: {prev_mask}")
+            # print(f"Current mask: {env.get_action_mask()}")
+            # time.sleep(6000)
+        
         elif info["food_obtained"]:
-            print(f"Food obtained at step {num_step:04d}. Food Reward: {reward:.4f}. Step Reward: {sum_step_reward:.4f}")
-            sum_step_reward = 0 
+            print(f"Food obtained at step {num_step:04d}. Food Reward: {1.0:.4f}.")
+            # print(f"Food obtained at step {num_step:04d}. Food Reward: {reward:.4f}. Step Reward: {sum_step_reward:.4f}")
+            # print(info["reward_step_counter"]) # Debug
+            sum_step_reward = 0 # Debug
 
         else:
             sum_step_reward += reward
+            # print(info["step_reward"], info["snake_size"]) # Debug
             
         episode_reward += reward
+
         if RENDER:
             env.render()
             time.sleep(FRAME_DELAY)

@@ -214,19 +214,29 @@ class SnakeGame:
         head_r, head_c = self.snake[0]
         head_x = head_c * self.cell_size + self.border_size
         head_y = head_r * self.cell_size + self.border_size
+
+        # Draw the head (Green)
+        # pygame.draw.polygon(self.screen, (0, 255, 0), [
+        #     (head_x + self.cell_size // 2, head_y),
+        #     (head_x + self.cell_size, head_y + self.cell_size // 2),
+        #     (head_x + self.cell_size // 2, head_y + self.cell_size),
+        #     (head_x, head_y + self.cell_size // 2)
+        # ])
+        
+        # Draw the head (Blue)
         pygame.draw.polygon(self.screen, (100, 100, 255), [
             (head_x + self.cell_size // 2, head_y),
             (head_x + self.cell_size, head_y + self.cell_size // 2),
             (head_x + self.cell_size // 2, head_y + self.cell_size),
             (head_x, head_y + self.cell_size // 2)
         ])
+
         eye_size = 3
         eye_offset = self.cell_size // 4
         pygame.draw.circle(self.screen, (255, 255, 255), (head_x + eye_offset, head_y + eye_offset), eye_size)
         pygame.draw.circle(self.screen, (255, 255, 255), (head_x + self.cell_size - eye_offset, head_y + eye_offset), eye_size)
 
-        # Draw the body
-        color_list = np.linspace(255, 100, len(self.snake), dtype=np.uint8)
+        # Draw the body (Green)
         i = 1
         for r, c in self.snake[1:]:
             body_x = c * self.cell_size + self.border_size
@@ -234,11 +244,24 @@ class SnakeGame:
             body_width = self.cell_size
             body_height = self.cell_size
             body_radius = 5
-            pygame.draw.rect(self.screen, (0, color_list[i], 0),
+            pygame.draw.rect(self.screen, (0, 255, 0),
                             (body_x, body_y, body_width, body_height), border_radius=body_radius)
             i += 1
-        pygame.draw.rect(self.screen, (255, 100, 100),
-                            (body_x, body_y, body_width, body_height), border_radius=body_radius)
+
+        # Draw the body (color gradient)
+        # color_list = np.linspace(255, 100, len(self.snake), dtype=np.uint8)
+        # i = 1
+        # for r, c in self.snake[1:]:
+        #     body_x = c * self.cell_size + self.border_size
+        #     body_y = r * self.cell_size + self.border_size
+        #     body_width = self.cell_size
+        #     body_height = self.cell_size
+        #     body_radius = 5
+        #     pygame.draw.rect(self.screen, (0, color_list[i], 0),
+        #                     (body_x, body_y, body_width, body_height), border_radius=body_radius)
+        #     i += 1
+        # pygame.draw.rect(self.screen, (255, 100, 100),
+        #                     (body_x, body_y, body_width, body_height), border_radius=body_radius)
         
 
 if __name__ == "__main__":
