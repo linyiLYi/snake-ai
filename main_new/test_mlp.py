@@ -2,8 +2,6 @@ import time
 import random
 
 from sb3_contrib import MaskablePPO
-# import numpy as np # For debugging.
-# import matplotlib.pyplot as plt # For checking raw observation.
 
 from snake_game_custom_wrapper_mlp import SnakeEnv
 
@@ -45,43 +43,25 @@ for episode in range(NUM_EPISODE):
     retry_limit = 9
     print(f"=================== Episode {episode + 1} ==================")
     while not done:
-        # action = env.action_space.sample()
         action, _ = model.predict(obs, action_masks=env.get_action_mask())
         
         prev_mask = env.get_action_mask()
-        # if np.sum(prev_mask) <= 1:
-        #     print(prev_mask)
-        #     time.sleep(5)
         prev_direction = env.game.direction
 
         num_step += 1
-        
-        # Check observation.
-        # plt.imshow(obs, interpolation='nearest')
-        # plt.show()
 
         obs, reward, done, info = env.step(action)
         
         if done:
             last_action = ["UP", "LEFT", "RIGHT", "DOWN"][action]
-            print(f"Gameover Penalty: {-1.0:.4f}. Last action: {last_action}")
-            # print(f"Gameover Penalty: {reward:.4f}. Last action: {last_action}")
-            
-            # print(f"Previous direction: {prev_direction}")
-            # print(f"Final direction: {env.game.direction}")
-            # print(f"Prev mask: {prev_mask}")
-            # print(f"Current mask: {env.get_action_mask()}")
-            # time.sleep(6000)
+            print(f"Gameover Penalty: {reward:.4f}. Last action: {last_action}")
         
         elif info["food_obtained"]:
-            print(f"Food obtained at step {num_step:04d}. Food Reward: {1.0:.4f}.")
-            # print(f"Food obtained at step {num_step:04d}. Food Reward: {reward:.4f}. Step Reward: {sum_step_reward:.4f}")
-            # print(info["reward_step_counter"]) # Debug
-            sum_step_reward = 0 # Debug
+            print(f"Food obtained at step {num_step:04d}. Food Reward: {reward:.4f}. Step Reward: {sum_step_reward:.4f}")
+            sum_step_reward = 0 # Reset step reward accumulator.
 
         else:
-            sum_step_reward += reward
-            # print(info["step_reward"], info["snake_size"]) # Debug
+            sum_step_reward += reward # Accumulate step rewards.
             
         episode_reward += reward
 

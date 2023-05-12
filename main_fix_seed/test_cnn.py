@@ -16,7 +16,7 @@ FRAME_DELAY = 0.03 # 0.01 fast, 0.05 slow
 ROUND_DELAY = 5
 
 FIX_SEED = True
-SEED_VALUE = 114514
+SEED_VALUE = 114515
 
 seed = random.randint(0, 1e9)
 if FIX_SEED:
