@@ -161,7 +161,7 @@ main_new/test_mlp_backup.py
 /main/logs*
 
 # archive models
-/archives/
+archives/
 
 *trained_models*
 *logs*
