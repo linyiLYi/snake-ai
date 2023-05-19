@@ -5,27 +5,24 @@ from sb3_contrib import MaskablePPO
 
 from snake_game_custom_wrapper_cnn import SnakeEnv
 
-MODEL_PATH_S = r"trained_models/cnn_mask_og_01_150000000_steps"  # Orignial training. ("og" for original)
-MODEL_PATH_L = r"trained_models/cnn_mask_ff_02_53500000_steps"   # With num_food = 40. ("ff" for forty food)
-MODEL_PATH_X = r"trained_models/cnn_mask_ws_04_8500000_steps"    # With warm start length of 140. ("ws" for warm start)
+MODEL_PATH = r"trained_models_cnn/ppo_snake_final"
 
-RENDER = False
 NUM_EPISODE = 10
-FRAME_DELAY = 0.01 # 0.01 fast, 0.05 slow
+
+RENDER = True
+FRAME_DELAY = 0.05 # 0.01 fast, 0.05 slow
 ROUND_DELAY = 5
 
 seed = random.randint(0, 1e9)
 print(f"Using seed = {seed} for testing.")
 
 if RENDER:
-    env = SnakeEnv(seed=seed, silent_mode=False, limit_step=False)
+    env = SnakeEnv(seed=seed, limit_step=False, silent_mode=False)
 else:
-    env = SnakeEnv(seed=seed, silent_mode=True, limit_step=False)
+    env = SnakeEnv(seed=seed, limit_step=False, silent_mode=True)
 
 # Load the trained model
-model_s = MaskablePPO.load(MODEL_PATH_S)
-model_l = MaskablePPO.load(MODEL_PATH_L)
-model_x = MaskablePPO.load(MODEL_PATH_X)
+model = MaskablePPO.load(MODEL_PATH)
 
 total_reward = 0
 total_score = 0
@@ -40,27 +37,30 @@ for episode in range(NUM_EPISODE):
     num_step = 0
     info = None
 
+    sum_step_reward = 0
+
+    retry_limit = 9
     print(f"=================== Episode {episode + 1} ==================")
     while not done:
-        if info:
-            snake_size = info["snake_length"]
-        else:
-            snake_size = 3
-        
-        if snake_size < 40:
-            action, _ = model_s.predict(obs, action_masks=env.get_action_mask())
-        elif snake_size < 140:
-            action, _ = model_l.predict(obs, action_masks=env.get_action_mask())
-        else:
-            action, _ = model_x.predict(obs, action_masks=env.get_action_mask())
-
-        obs, reward, done, info = env.step(action)
+        action, _ = model.predict(obs, action_masks=env.get_action_mask())
+        prev_mask = env.get_action_mask()
+        prev_direction = env.game.direction
         num_step += 1
-        if info["food_obtained"]:
-            print(f"Food obtained at step {num_step:04d}. Food Reward: {reward:.4f}.")
-        elif done:
-            final_direction = ["UP", "LEFT", "RIGHT", "DOWN"][action]
-            print(f"Gameover Penalty: {reward:.4f}. Final Direction: {final_direction}")
+        obs, reward, done, info = env.step(action)
+
+        if done:
+            if info["snake_size"] == env.game.grid_size:
+                print(f"You are BREATHTAKING! Victory reward: {reward:.4f}.")
+            else:
+                last_action = ["UP", "LEFT", "RIGHT", "DOWN"][action]
+                print(f"Gameover Penalty: {reward:.4f}. Last action: {last_action}")
+
+        elif info["food_obtained"]:
+            print(f"Food obtained at step {num_step:04d}. Food Reward: {reward:.4f}. Step Reward: {sum_step_reward:.4f}")
+            sum_step_reward = 0 
+
+        else:
+            sum_step_reward += reward
             
         episode_reward += reward
         if RENDER:
@@ -73,7 +73,7 @@ for episode in range(NUM_EPISODE):
     if episode_score > max_score:
         max_score = episode_score
     
-    snake_size = info["snake_length"] + 1
+    snake_size = info["snake_size"] + 1
     print(f"Episode {episode + 1}: Reward Sum: {episode_reward:.4f}, Score: {episode_score}, Total Steps: {num_step}, Snake Size: {snake_size}")
     total_reward += episode_reward
     total_score += env.game.score

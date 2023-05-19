@@ -151,17 +151,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Model Files
-/main/trained_*
-
-# Archive script
-main_new/test_mlp_backup.py
-
-# Logs
-/main/logs*
+# Archived scripts
+main/test_mlp_backup.py
 
 # archive models
 archives/
-
-*trained_models*
-*logs*
+main/trained_models_archived*

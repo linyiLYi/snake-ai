@@ -1,10 +1,12 @@
 import time
 import random
 
-from snake_game_custom_wrapper import SnakeEnv
+from snake_game_custom_wrapper_cnn import SnakeEnv
 
-RENDER_DELAY = 0.01
-BOARD_SIZE = 6
+FRAME_DELAY = 0.01 # 0.01 fast, 0.05 slow
+ROUND_DELAY = 5
+
+BOARD_SIZE = 12
 
 def generate_hamiltonian_cycle(board_size):
     path = [(0, c) for c in range(board_size)]
@@ -22,7 +24,7 @@ def generate_hamiltonian_cycle(board_size):
     
     return path
 
-def find_next_action(snake_head, snake_direction, next_position):
+def find_next_action(snake_head, next_position):
     row_diff = next_position[0] - snake_head[0]
     col_diff = next_position[1] - snake_head[1]
 
@@ -59,16 +61,16 @@ def main():
             current_index = (current_index + 1) % cycle_len
 
         next_position = cycle[(current_index + 1) % cycle_len]
-        action = find_next_action(snake_head, env.game.direction, next_position)
+        action = find_next_action(snake_head, next_position)
 
         _, _, done, _ = env.step(action)
         num_step += 1
         env.render()
-        time.sleep(RENDER_DELAY)
+        time.sleep(FRAME_DELAY)
 
         if done:
             print(f"Game Finished: Score = {env.game.score}, Total steps = {num_step}")
-            time.sleep(100)
+            time.sleep(ROUND_DELAY)
 
 if __name__ == "__main__":
     main()
