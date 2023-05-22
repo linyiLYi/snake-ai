@@ -92,10 +92,11 @@ class SnakeGame:
             self.non_snake.remove((row, col))
 
         else: # If game is over and the game is not in silent mode, play game over sound effect.
-            if len(self.snake) < self.grid_size:
-                self.sound_game_over.play()
-            else:
-                self.sound_victory.play()
+            if not self.silent_mode:
+                if len(self.snake) < self.grid_size:
+                    self.sound_game_over.play()
+                else:
+                    self.sound_victory.play()
 
         # Add new food after snake movement completes.
         if food_obtained:
