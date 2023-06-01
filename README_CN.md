@@ -1,6 +1,6 @@
 # SnakeAI
 
-简体中文 | [English](README.md)
+简体中文 | [English](README.md) | [日本語](README_JA.md)
 
 本项目包含经典游戏《贪吃蛇》的程序脚本以及可以自动进行游戏的人工智能代理。该智能代理基于深度强化学习进行训练，包括两个版本：基于多层感知机（Multi-Layer Perceptron）的代理和基于卷积神经网络（Convolution Neural Network）的代理，其中后者的平均游戏分数更高。
 
