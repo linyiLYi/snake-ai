@@ -159,3 +159,5 @@ archives/
 main/trained_models_archived*
 main/trained_models_cnn_mps
 *Studio*
+
+*DS_Store*
