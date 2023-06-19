@@ -30,14 +30,35 @@
 # 创建 conda 环境，将其命名为 SnakeAI，Python 版本 3.8.16
 conda create -n SnakeAI python=3.8.16
 conda activate SnakeAI
+```
 
-# [可选] 使用 GPU 训练需要手动安装完整版 PyTorch
+在 Windows 与 macOS 下配置外部代码库的过程略有不同。Windows 下使用 CUDA 加速，macOS 下则使用 MPS (Metal Performance Shaders) 进行加速，且需要降级 `pip` 与 `setuptools`。
+
+Windows:
+```bash 
+# 使用 GPU 训练需要手动安装完整版 PyTorch
 conda install pytorch=2.0.0 torchvision pytorch-cuda=11.8 -c pytorch -c nvidia
 
-# [可选] 运行程序脚本测试 PyTorch 是否能成功调用 GPU
+# 运行程序脚本测试 PyTorch 是否能成功调用 GPU
 python .\utils\check_gpu_status.py
 
 # 安装外部代码库
+pip install -r requirements.txt
+```
+
+macOS (Apple Silicon):
+```bash
+# 使用 GPU 训练需要手动安装 Apple Silicon 版 PyTorch
+conda install pytorch::pytorch=2.0.1 torchvision torchaudio -c pytorch
+
+# 运行程序脚本测试 PyTorch 是否能成功调用 GPU
+python utils/check_gpu_status_mps.py
+
+# 安装 tensorboard
+pip install tensorboard==2.13.0
+
+# 降级安装外部代码库
+pip install setuptools==65.5.0 pip==21
 pip install -r requirements.txt
 ```
 

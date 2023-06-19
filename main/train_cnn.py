@@ -2,6 +2,7 @@ import os
 import sys
 import random
 
+import torch
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.callbacks import CheckpointCallback
@@ -51,23 +52,42 @@ def main():
     lr_schedule = linear_schedule(2.5e-4, 2.5e-6)
     clip_range_schedule = linear_schedule(0.150, 0.025)
 
-    # Instantiate a PPO agent
-    model = MaskablePPO(
-        "CnnPolicy",
-        env,
-        device="cuda",
-        verbose=1,
-        n_steps=2048,
-        batch_size=512,
-        n_epochs=4,
-        gamma=0.94,
-        learning_rate=lr_schedule,
-        clip_range=clip_range_schedule,
-        tensorboard_log=LOG_DIR
-    )
+    if torch.backends.mps.is_available():
+        # Instantiate a PPO agent
+        model = MaskablePPO(
+            "CnnPolicy",
+            env,
+            device="mps",
+            verbose=1,
+            n_steps=2048,
+            batch_size=512,
+            n_epochs=4,
+            gamma=0.94,
+            learning_rate=lr_schedule,
+            clip_range=clip_range_schedule,
+            tensorboard_log=LOG_DIR
+        )
+    else:
+        # Instantiate a PPO agent
+        model = MaskablePPO(
+            "CnnPolicy",
+            env,
+            device="cuda",
+            verbose=1,
+            n_steps=2048,
+            batch_size=512,
+            n_epochs=4,
+            gamma=0.94,
+            learning_rate=lr_schedule,
+            clip_range=clip_range_schedule,
+            tensorboard_log=LOG_DIR
+        )
 
     # Set the save directory
-    save_dir = "trained_models_cnn"
+    if torch.backends.mps.is_available():
+        save_dir = "trained_models_cnn_mps"
+    else:
+        save_dir = "trained_models_cnn"
     os.makedirs(save_dir, exist_ok=True)
 
     checkpoint_interval = 15625 # checkpoint_interval * num_envs = total_steps_per_checkpoint
