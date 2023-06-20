@@ -52,10 +52,9 @@ def main():
     # Create the Snake environment.
     env = SubprocVecEnv([make_env(seed=s) for s in seed_set])
 
-    lr_schedule = linear_schedule(2.5e-4, 2.5e-6)
-    clip_range_schedule = linear_schedule(0.150, 0.025)
-
     if torch.backends.mps.is_available():
+        lr_schedule = linear_schedule(5e-4, 2.5e-6)
+        clip_range_schedule = linear_schedule(0.150, 0.025)
         # Instantiate a PPO agent using MPS (Metal Performance Shaders).
         model = MaskablePPO(
             "CnnPolicy",
@@ -71,6 +70,8 @@ def main():
             tensorboard_log=LOG_DIR
         )
     else:
+        lr_schedule = linear_schedule(2.5e-4, 2.5e-6)
+        clip_range_schedule = linear_schedule(0.150, 0.025)
         # Instantiate a PPO agent using CUDA.
         model = MaskablePPO(
             "CnnPolicy",
