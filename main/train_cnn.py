@@ -12,7 +12,10 @@ from sb3_contrib.common.wrappers import ActionMasker
 
 from snake_game_custom_wrapper_cnn import SnakeEnv
 
-NUM_ENV = 32
+if torch.backends.mps.is_available():
+    NUM_ENV = 32 * 2
+else:
+    NUM_ENV = 32
 LOG_DIR = "logs"
 
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -53,14 +56,14 @@ def main():
     clip_range_schedule = linear_schedule(0.150, 0.025)
 
     if torch.backends.mps.is_available():
-        # Instantiate a PPO agent
+        # Instantiate a PPO agent using MPS (Metal Performance Shaders).
         model = MaskablePPO(
             "CnnPolicy",
             env,
             device="mps",
             verbose=1,
             n_steps=2048,
-            batch_size=512,
+            batch_size=512*8,
             n_epochs=4,
             gamma=0.94,
             learning_rate=lr_schedule,
@@ -68,7 +71,7 @@ def main():
             tensorboard_log=LOG_DIR
         )
     else:
-        # Instantiate a PPO agent
+        # Instantiate a PPO agent using CUDA.
         model = MaskablePPO(
             "CnnPolicy",
             env,
