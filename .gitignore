@@ -157,7 +157,8 @@ main/test_mlp_backup.py
 # archive models
 archives/
 main/trained_models_archived*
-main/trained_models_cnn_mps
+main/trained_models_cnn_mps/*
+!/main/trained_models_cnn_mps/ppo_snake_final.zip
 *Studio*
 
 *DS_Store*
