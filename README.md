@@ -1,6 +1,6 @@
 # SnakeAI
 
-[简体中文](README_CN.md) | English | [日本語](README_JA.md)
+[简体中文](README_CN.md) | English | [日本語](README_JP.md)
 
 This project contains the program scripts for the classic game "Snake" and an artificial intelligence agent that can play the game automatically. The intelligent agent is trained using deep reinforcement learning and includes two versions: an agent based on a Multi-Layer Perceptron (MLP) and an agent based on a Convolution Neural Network (CNN), with the latter having a higher average game score.
 
