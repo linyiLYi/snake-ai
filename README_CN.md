@@ -62,6 +62,19 @@ pip install setuptools==65.5.0 pip==21
 pip install -r requirements.txt
 ```
 
+Linux:
+```bash 
+# 使用 GPU 训练需要手动安装完整版 PyTorch
+conda install pytorch=2.0.0 torchvision pytorch-cuda=11.8 -c pytorch -c nvidia
+
+# 运行程序脚本测试 PyTorch 是否能成功调用 GPU
+python .\utils\check_gpu_status.py
+
+# 安装外部代码库
+pip install setuptools==65.5.0 pip==23.1.2
+pip install -r requirements.txt
+```
+
 ### 运行测试
 
 项目 `main/` 文件夹下包含经典游戏《贪吃蛇》的程序脚本，基于 [Pygame](https://www.pygame.org/news) 代码库，可以直接运行以下指令进行游戏：

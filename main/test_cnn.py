@@ -14,6 +14,7 @@ else:
 NUM_EPISODE = 10
 
 RENDER = True
+SILENT_MODE = True
 FRAME_DELAY = 0.05 # 0.01 fast, 0.05 slow
 ROUND_DELAY = 5
 
@@ -21,7 +22,7 @@ seed = random.randint(0, 1e9)
 print(f"Using seed = {seed} for testing.")
 
 if RENDER:
-    env = SnakeEnv(seed=seed, limit_step=False, silent_mode=False)
+    env = SnakeEnv(seed=seed, limit_step=False, silent_mode=SILENT_MODE)
 else:
     env = SnakeEnv(seed=seed, limit_step=False, silent_mode=True)
 
