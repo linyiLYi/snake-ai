@@ -10,7 +10,7 @@ MODEL_PATH = r"trained_models_mlp/ppo_snake_final"
 NUM_EPISODE = 10
 
 RENDER = True
-SILENT_MODE = False
+SILENT_MODE = True
 FRAME_DELAY = 0.05 # 0.01 fast, 0.05 slow
 ROUND_DELAY = 5
 
