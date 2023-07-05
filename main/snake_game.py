@@ -32,8 +32,10 @@ class SnakeGame:
             self.sound_game_over = mixer.Sound("sound/game_over.wav")
             self.sound_victory = mixer.Sound("sound/victory.wav")
         else:
-            self.screen = None
-            self.font = None
+            pygame.init()
+            pygame.display.set_caption("Snake Game")
+            self.screen = pygame.display.set_mode((self.display_width, self.display_height))
+            self.font = pygame.font.Font(None, 36)
 
         self.snake = None
         self.non_snake = None
