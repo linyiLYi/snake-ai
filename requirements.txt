@@ -1,4 +1,4 @@
-gym==0.21.0
-stable-baselines3==1.8.0
-sb3-contrib==1.8.0
+gym==0.26.2
+stable-baselines3==2.0.0
+sb3-contrib==2.0.0
 pygame==2.3.0
