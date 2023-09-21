@@ -5,7 +5,8 @@ from sb3_contrib import MaskablePPO
 
 from snake_game_custom_wrapper_mlp import SnakeEnv
 
-MODEL_PATH = r"trained_models_mlp/ppo_snake_final"
+# MODEL_PATH = r"main/trained_models_mlp/ppo_snake_final"
+MODEL_PATH = r"/Users/chenbingcheng/Downloads/STUDY/06_MPICT_Courses/07_semester3/01_SSY340 Deep machine learning/snake-ai/trained_models_mlp/ppo_snake_46875_steps"
 
 NUM_EPISODE = 10
 
