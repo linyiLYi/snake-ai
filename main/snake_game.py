@@ -28,9 +28,9 @@ class SnakeGame:
 
             # Load sound effects
             mixer.init()
-            self.sound_eat = mixer.Sound("sound/eat.wav")
-            self.sound_game_over = mixer.Sound("sound/game_over.wav")
-            self.sound_victory = mixer.Sound("sound/victory.wav")
+            self.sound_eat = mixer.Sound("main/sound/eat.wav")
+            self.sound_game_over = mixer.Sound("main/sound/game_over.wav")
+            self.sound_victory = mixer.Sound("main/sound/victory.wav")
         else:
             self.screen = None
             self.font = None

@@ -7,9 +7,9 @@ from sb3_contrib import MaskablePPO
 from snake_game_custom_wrapper_cnn import SnakeEnv
 
 if torch.backends.mps.is_available():
-    MODEL_PATH = r"trained_models_cnn_mps/ppo_snake_final"
+    MODEL_PATH = r"main/trained_models_cnn_mps/ppo_snake_final"
 else:
-    MODEL_PATH = r"trained_models_cnn/ppo_snake_final"
+    MODEL_PATH = r"main/trained_models_cnn/ppo_snake_final"
 
 NUM_EPISODE = 10
 
