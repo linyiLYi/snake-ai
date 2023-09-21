@@ -1,6 +1,7 @@
 import os
 import sys
 import random
+import tensorboard
 
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import SubprocVecEnv
@@ -10,7 +11,7 @@ from sb3_contrib.common.wrappers import ActionMasker
 
 from snake_game_custom_wrapper_mlp import SnakeEnv
 
-NUM_ENV = 32
+NUM_ENV = 3
 LOG_DIR = "logs"
 os.makedirs(LOG_DIR, exist_ok=True)
 
@@ -87,7 +88,7 @@ def main():
     sys.stdout = original_stdout
 
     # Save the final model
-    model.save(os.path.join(save_dir, "ppo_snake_final.zip"))
+    model.save(os.path.join(save_dir, "ppo_snake_final_test.zip"))
 
 if __name__ == "__main__":
     main()
