@@ -1,0 +1,14 @@
+[project]
+name = "snake-ai"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "gymnasium==0.29.1",
+    "numpy==1.26.4",
+    "pygame==2.6.1",
+    "sb3-contrib==2.3.0",
+    "stable-baselines3==2.3.0",
+    "tensorboard==2.18.0",
+]

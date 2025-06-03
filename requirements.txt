@@ -1,4 +1,6 @@
-gym==0.21.0
-stable-baselines3==1.8.0
-sb3-contrib==1.8.0
-pygame==2.3.0
+numpy==1.26.4
+gymnasium==0.29.1
+stable-baselines3==2.3.0
+pygame==2.6.1
+sb3-contrib==2.3.0
+tensorboard==2.18.0

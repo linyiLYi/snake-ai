@@ -1,0 +1,3 @@
+Trials: 5000
+Average Fruits: 32.7778, Min Fruits: 7, Max Fruits: 33, Average reward: 5.653709025909406, Win Ratio: 0.9842, Avg Moves to Win: 149.03210729526518
+Running Time (s): 375.50679898262024
